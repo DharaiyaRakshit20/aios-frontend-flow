@@ -1,9 +1,9 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { runScan } from "@/lib/api";
 
-export default function ScanWizard() {
+function ScanForm() {
   const router = useRouter();
   const params = useSearchParams();
   const orgId = parseInt(params.get("org"));
@@ -77,5 +77,13 @@ export default function ScanWizard() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ScanWizard() {
+  return (
+    <Suspense fallback={<div className="p-8 text-slate-500">Loading...</div>}>
+      <ScanForm />
+    </Suspense>
   );
 }
