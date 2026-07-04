@@ -12,11 +12,11 @@ export function logout() {
 }
 
 // --- auth calls ---
-export async function register(email, password, fullName) {
+export async function register(payload) {
   const res = await fetch(`${API_URL}/api/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, full_name: fullName }),
+    body: JSON.stringify(payload),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
@@ -80,4 +80,36 @@ export async function getReport(id) {
 // --- audit logs ---
 export async function getAuditLogs() {
   return apiFetch("/api/audit/");
+}
+
+export async function getDashboardStats() {
+  return apiFetch("/api/scanner/stats");
+}
+
+export async function updateOrganization(id, name, industry) {
+  return apiFetch(`/api/organizations/${id}/`, {
+    method: "PATCH",
+    body: JSON.stringify({ name, industry }),
+  });
+}
+
+export async function deleteOrganization(id) {
+  return apiFetch(`/api/organizations/${id}/`, {
+    method: "DELETE",
+  });
+}
+
+export async function getProfile() {
+  return apiFetch("/api/auth/me");
+}
+
+export async function updateProfile(fullName) {
+  return apiFetch("/api/auth/me", {
+    method: "PATCH",
+    body: JSON.stringify({ full_name: fullName }),
+  });
+}
+
+export async function getOrganization(id) {
+  return apiFetch(`/api/organizations/${id}/`);
 }

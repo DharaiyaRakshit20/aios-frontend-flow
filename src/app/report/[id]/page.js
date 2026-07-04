@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getToken, getReport } from "@/lib/api";
+import AppShell from "../../components/AppShell";
 
 export default function ReportPage() {
   const router = useRouter();
@@ -22,84 +23,119 @@ export default function ReportPage() {
       .then((blob) => {
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = `aios-report-${id}.pdf`;
+        link.download = `qevora-report-${id}.pdf`;
         link.click();
       });
   }
 
-  if (error) return <div className="p-8 text-red-600">{error}</div>;
-  if (!report) return <div className="p-8 text-slate-500">Loading report...</div>;
+  if (error) return <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center text-red-400 p-8">{error}</div>;
+  if (!report) return <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center text-slate-500">Loading report...</div>;
+
+  // failed
+  if (report.status === "failed") {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-4 text-white">
+        <div className="bg-white/[0.03] border border-red-500/20 rounded-2xl p-8 max-w-md text-center">
+          <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 text-red-400 text-2xl">!</div>
+          <h1 className="text-lg font-semibold mb-2">Scan failed</h1>
+          <p className="text-slate-400 text-sm mb-6">This scan could not be completed. You can run the scan again.</p>
+          <button onClick={() => router.push("/dashboard")} className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg px-5 py-2.5 font-medium hover:opacity-90 transition">
+            Back to dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // pending
+  if (report.status === "pending") {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-4 text-white">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-white/10 border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="font-medium">Analyzing your business...</p>
+          <p className="text-slate-500 text-sm mt-1">This may take a few seconds</p>
+        </div>
+      </div>
+    );
+  }
 
   const r = report.result || {};
   const score = report.readiness_score ?? 0;
-
-  const ring = score >= 70 ? "#16a34a" : score >= 40 ? "#d97706" : "#dc2626";
+  const ring = score >= 70 ? "#34d399" : score >= 40 ? "#fbbf24" : "#f87171";
   const impactColor = (x) =>
-    x === "high" ? "bg-green-100 text-green-700"
-    : x === "medium" ? "bg-amber-100 text-amber-700"
-    : "bg-slate-100 text-slate-600";
+    x === "high" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+    : x === "medium" ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+    : "bg-white/5 text-slate-400 border-white/10";
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <div className="flex justify-between items-center">
-          <button onClick={() => router.push("/dashboard")} className="text-sm text-slate-500">← Back to dashboard</button>
-          <button
-            onClick={downloadPdf}
-            className="text-sm bg-slate-900 text-white rounded-lg px-4 py-2 hover:bg-slate-700"
-          >
+    <AppShell>
+      <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
+        <div className="flex justify-end items-center">
+          <button onClick={downloadPdf} className="text-sm bg-white/10 border border-white/10 rounded-lg px-4 py-2 hover:bg-white/20 transition">
             Download PDF
           </button>
         </div>
 
         {/* score card */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 flex flex-col sm:flex-row items-center gap-6">
-          <div
-            className="w-32 h-32 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: `conic-gradient(${ring} ${score * 3.6}deg, #e2e8f0 0deg)` }}
-          >
-            <div className="w-24 h-24 bg-white rounded-full flex flex-col items-center justify-center">
-              <span className="text-3xl font-bold text-slate-900">{score}</span>
+        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 flex flex-col sm:flex-row items-center gap-8">
+          <div className="w-32 h-32 rounded-full flex items-center justify-center shrink-0"
+               style={{ background: `conic-gradient(${ring} ${score * 3.6}deg, rgba(255,255,255,0.06) 0deg)` }}>
+            <div className="w-24 h-24 bg-[#0a0a0f] rounded-full flex flex-col items-center justify-center">
+              <span className="text-3xl font-bold">{score}</span>
               <span className="text-xs text-slate-500">/ 100</span>
             </div>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900 mb-1">AI Readiness Score</h1>
-            <p className="text-slate-600 text-sm">{r.summary}</p>
+            <div className="flex items-center gap-2 mb-2">
+              <h1 className="text-xl font-bold">AI Readiness Score</h1>
+              {r.maturity_level && (
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white">
+                  {r.maturity_level}
+                </span>
+              )}
+            </div>
+            <p className="text-slate-400 text-sm">{r.summary}</p>
           </div>
         </div>
 
-        {/* savings */}
-        {r.savings_estimate?.monthly_usd != null && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6">
-            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-1">Estimated Monthly Savings</h2>
-            <p className="text-3xl font-bold text-green-600 mb-2">
-              ${Number(r.savings_estimate.monthly_usd).toLocaleString()}
-              <span className="text-base text-slate-400 font-normal"> / month</span>
-            </p>
-            <p className="text-slate-600 text-sm">{r.savings_estimate.rationale}</p>
-          </div>
-        )}
+        {/* savings + roi grid */}
+        <div className="grid sm:grid-cols-2 gap-4">
+          {r.savings_estimate?.monthly_usd != null && (
+            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
+              <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Estimated Monthly Savings</h2>
+              <p className="text-3xl font-bold text-emerald-400 mb-2">
+                ${Number(r.savings_estimate.monthly_usd).toLocaleString()}
+                <span className="text-sm text-slate-500 font-normal"> / mo</span>
+              </p>
+              <p className="text-slate-400 text-sm">{r.savings_estimate.rationale}</p>
+            </div>
+          )}
+          {r.estimated_roi?.percentage != null && (
+            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
+              <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Estimated ROI</h2>
+              <p className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent mb-2">
+                {r.estimated_roi.percentage}%
+                <span className="text-sm text-slate-500 font-normal"> annual</span>
+              </p>
+              <p className="text-slate-400 text-sm">{r.estimated_roi.rationale}</p>
+            </div>
+          )}
+        </div>
 
-        {/* opportunity matrix */}
+        {/* opportunities */}
         {r.opportunity_matrix?.length > 0 && (
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 mb-3">Opportunities</h2>
+            <h2 className="text-lg font-semibold mb-3">Opportunities</h2>
             <div className="grid sm:grid-cols-2 gap-3">
               {r.opportunity_matrix.map((op, i) => (
-                <div key={i} className="bg-white border border-slate-200 rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium text-slate-900">{op.area}</h3>
-                  </div>
+                <div key={i} className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 hover:border-indigo-500/30 transition">
+                  <h3 className="font-medium mb-2">{op.area}</h3>
                   <div className="flex gap-2 mb-2">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${impactColor(op.impact)}`}>
-                      Impact: {op.impact}
-                    </span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                      Effort: {op.effort}
-                    </span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full border ${impactColor(op.impact)}`}>Impact: {op.impact}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full border bg-white/5 text-slate-400 border-white/10">Effort: {op.effort}</span>
                   </div>
-                  <p className="text-sm text-slate-600">{op.description}</p>
+                  <p className="text-sm text-slate-400">{op.description}</p>
                 </div>
               ))}
             </div>
@@ -108,21 +144,19 @@ export default function ReportPage() {
 
         {/* recommendations */}
         {r.recommendations?.length > 0 && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-6">
-            <h2 className="text-lg font-semibold text-slate-900 mb-3">Recommendations</h2>
+          <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
+            <h2 className="text-lg font-semibold mb-4">Recommendations</h2>
             <ol className="space-y-3">
               {r.recommendations.map((rec, i) => (
                 <li key={i} className="flex gap-3">
-                  <span className="shrink-0 w-6 h-6 bg-slate-900 text-white text-xs rounded-full flex items-center justify-center">
-                    {i + 1}
-                  </span>
-                  <p className="text-sm text-slate-700">{rec}</p>
+                  <span className="shrink-0 w-6 h-6 bg-gradient-to-br from-indigo-500 to-violet-500 text-white text-xs rounded-full flex items-center justify-center">{i + 1}</span>
+                  <p className="text-sm text-slate-300">{rec}</p>
                 </li>
               ))}
             </ol>
           </div>
         )}
       </div>
-    </div>
+    </AppShell>
   );
 }
