@@ -41,7 +41,7 @@ export default function Landing() {
             </span>
           </h1>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-10 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-            Qevora scans your business, scores your AI readiness, and shows you exactly where to save time and money — in minutes, not months.
+            Qevora scans your business, scores your AI readiness, builds a roadmap, and even lets you launch AI agents — in minutes, not months.
           </p>
           <div className="flex gap-3 justify-center animate-fade-up" style={{ animationDelay: "0.3s" }}>
             <button onClick={go} className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-xl px-7 py-3.5 font-medium hover:opacity-90 hover:scale-105 transition shadow-lg shadow-indigo-500/25">
@@ -87,20 +87,23 @@ export default function Landing() {
         <section className="max-w-5xl mx-auto px-6 pb-24">
           <Reveal>
             <div className="text-center mb-14">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-3">Everything you need to go AI-ready</h2>
-              <p className="text-slate-400 max-w-xl mx-auto">One scan gives you a complete, actionable picture of where AI fits in your business.</p>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-3">Everything you need, in one platform</h2>
+              <p className="text-slate-400 max-w-xl mx-auto">From understanding AI to actually running it in your business — Qevora covers the whole journey.</p>
             </div>
           </Reveal>
           <div className="grid sm:grid-cols-3 gap-5">
             {[
               { t: "AI Readiness Score", d: "A clear 0–100 score with a maturity level, so you know exactly where you stand.", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
-              { t: "Opportunity Map", d: "See which areas give the highest impact for the least effort — no guesswork.", icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z" },
               { t: "Savings & ROI", d: "Estimated monthly savings and annual ROI, tailored to your business.", icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 1v8" },
-              { t: "Recommendations", d: "A prioritized list of concrete next steps — not vague advice.", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
-              { t: "PDF Reports", d: "Export a clean report to share with your team or investors.", icon: "M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" },
-              { t: "Multiple Organizations", d: "Scan several businesses or clients from a single dashboard.", icon: "M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5a4 4 0 11-8 0 4 4 0 018 0z" },
+              { t: "Opportunity Map", d: "See which areas give the highest impact for the least effort — no guesswork.", icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z" },
+              { t: "Implementation Blueprints", d: "For each opportunity, get a full plan: tools, steps, timeline, cost, and team needed.", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
+              { t: "AI Agent Builder", d: "Create custom AI chatbots for your business — test them, then deploy them anywhere.", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
+              { t: "One-line Website Embed", d: "Add your AI agent to any website with a single line of code — like a chat widget.", icon: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" },
+              { t: "Developer API & Docs", d: "Integrate Qevora into your own apps with a clean API and ready-to-use code examples.", icon: "M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" },
+              { t: "Team Collaboration", d: "Invite your team and manage multiple businesses from one dashboard, with roles.", icon: "M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5a4 4 0 11-8 0 4 4 0 018 0z" },
+              { t: "Privacy-first", d: "Your data is never sold. Chats on embedded agents aren't stored. Bring your own AI key.", icon: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" },
             ].map((f, i) => (
-              <Reveal key={i} delay={i * 80}>
+              <Reveal key={i} delay={i * 60}>
                 <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 hover:border-indigo-500/40 hover:-translate-y-1 transition duration-300 h-full">
                   <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 border border-indigo-500/20 flex items-center justify-center mb-4">
                     <svg className="w-5 h-5 text-indigo-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -116,24 +119,86 @@ export default function Landing() {
         </section>
 
         {/* HOW IT WORKS */}
-        <section className="max-w-4xl mx-auto px-6 pb-24">
+        <section className="max-w-5xl mx-auto px-6 pb-24">
           <Reveal>
             <div className="text-center mb-14">
               <h2 className="text-3xl sm:text-4xl font-bold mb-3">How it works</h2>
-              <p className="text-slate-400">Three simple steps from sign-up to a full AI roadmap.</p>
+              <p className="text-slate-400">Four simple steps from sign-up to a live AI agent.</p>
             </div>
           </Reveal>
-          <div className="grid sm:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-4 gap-8">
             {[
-              { n: "1", t: "Add your business", d: "Create an organization and tell us about your operations." },
-              { n: "2", t: "Run a scan", d: "Answer a guided questionnaire — our AI analyzes 20+ factors." },
-              { n: "3", t: "Get your report", d: "Receive your score, opportunities, savings, and next steps." },
+              { n: "1", t: "Scan your business", d: "Answer a few quick questions — our AI analyzes 20+ factors in minutes." },
+              { n: "2", t: "Get your roadmap", d: "See your score, savings, and a detailed blueprint for each opportunity." },
+              { n: "3", t: "Build AI agents", d: "Turn opportunities into working AI chatbots, tailored to your business." },
+              { n: "4", t: "Deploy anywhere", d: "Add your agent to your website with one line, or use our API." },
             ].map((s, i) => (
               <Reveal key={i} delay={i * 120}>
                 <div className="text-center">
                   <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center font-bold text-lg mb-4">{s.n}</div>
                   <h3 className="font-semibold text-lg mb-2">{s.t}</h3>
                   <p className="text-slate-400 text-sm">{s.d}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+
+        {/* WHY QEVORA */}
+        <section className="max-w-4xl mx-auto px-6 pb-24">
+          <Reveal>
+            <div className="bg-gradient-to-b from-white/[0.04] to-transparent border border-white/10 rounded-3xl p-8 sm:p-12">
+              <div className="text-center mb-10">
+                <span className="inline-block text-xs uppercase tracking-wide text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-4 py-1.5 mb-4">Why we built Qevora</span>
+                <h2 className="text-3xl sm:text-4xl font-bold mb-4">AI is everywhere — but where do <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">you</span> start?</h2>
+                <p className="text-slate-400 max-w-2xl mx-auto">
+                  Most business owners know AI can help, but not how, where, or if it&apos;s worth it. Consultants are expensive. Generic advice doesn&apos;t fit your business. So most people do nothing — and fall behind.
+                </p>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-6">
+                <div className="bg-red-500/[0.04] border border-red-500/15 rounded-2xl p-6">
+                  <p className="text-sm font-semibold text-red-300 mb-3">Without Qevora</p>
+                  <ul className="space-y-2.5 text-sm text-slate-400">
+                    <li className="flex gap-2"><span className="text-red-400">✕</span> Guessing where AI might help</li>
+                    <li className="flex gap-2"><span className="text-red-400">✕</span> Paying consultants thousands</li>
+                    <li className="flex gap-2"><span className="text-red-400">✕</span> Generic advice that doesn&apos;t fit</li>
+                    <li className="flex gap-2"><span className="text-red-400">✕</span> Months of research, no action</li>
+                  </ul>
+                </div>
+                <div className="bg-emerald-500/[0.04] border border-emerald-500/15 rounded-2xl p-6">
+                  <p className="text-sm font-semibold text-emerald-300 mb-3">With Qevora</p>
+                  <ul className="space-y-2.5 text-sm text-slate-300">
+                    <li className="flex gap-2"><span className="text-emerald-400">✓</span> A clear AI score & roadmap in minutes</li>
+                    <li className="flex gap-2"><span className="text-emerald-400">✓</span> Tailored to your exact business</li>
+                    <li className="flex gap-2"><span className="text-emerald-400">✓</span> Real savings & ROI estimates</li>
+                    <li className="flex gap-2"><span className="text-emerald-400">✓</span> Build & deploy AI agents, live</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </section>
+
+        {/* BENEFITS */}
+        <section className="max-w-5xl mx-auto px-6 pb-24">
+          <Reveal>
+            <div className="text-center mb-14">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-3">What you actually get</h2>
+              <p className="text-slate-400 max-w-xl mx-auto">Not just a report — a clear path from &quot;AI sounds useful&quot; to AI working in your business.</p>
+            </div>
+          </Reveal>
+          <div className="grid sm:grid-cols-3 gap-5">
+            {[
+              { icon: "💰", title: "Know your savings", desc: "See exactly how much time and money AI could save you — in real numbers, not hype." },
+              { icon: "🗺️", title: "Get a clear roadmap", desc: "A step-by-step plan for each opportunity: what to build, what tools, what it costs." },
+              { icon: "🤖", title: "Launch AI agents", desc: "Turn your plan into working AI chatbots and add them to your website in one line." },
+            ].map((b, i) => (
+              <Reveal key={i} delay={i * 80}>
+                <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 h-full hover:border-indigo-500/40 transition">
+                  <div className="text-3xl mb-3">{b.icon}</div>
+                  <h3 className="font-semibold text-lg mb-2">{b.title}</h3>
+                  <p className="text-slate-400 text-sm">{b.desc}</p>
                 </div>
               </Reveal>
             ))}
@@ -205,7 +270,9 @@ export default function Landing() {
               { q: "How long does a scan take?", a: "About 5 minutes. You answer a guided questionnaire and our AI does the rest instantly." },
               { q: "Is it really free to start?", a: "Yes — you can scan your first business free, no credit card required." },
               { q: "Can I scan more than one business?", a: "Absolutely. You can add multiple organizations and scan each one separately." },
-              { q: "What do I get at the end?", a: "A full report with your AI readiness score, opportunities, savings estimate, ROI, and prioritized recommendations — downloadable as a PDF." },
+              { q: "Can I put an AI agent on my own website?", a: "Yes. Build an agent, then add it to any website with a single line of code, or use our API." },
+              { q: "Is my data safe?", a: "Your data is never sold. Chats on embedded agents aren't stored by us, and you can even use your own AI key for full privacy." },
+              { q: "What do I get at the end?", a: "A full report with your AI readiness score, opportunities, savings, ROI, blueprints, and downloadable PDF." },
             ].map((f, i) => (
               <Reveal key={i} delay={i * 60}>
                 <button
