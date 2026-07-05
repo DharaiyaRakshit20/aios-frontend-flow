@@ -40,7 +40,13 @@ function NewAgentForm() {
     try {
       const agent = await createAgent({ ...form, organization: parseInt(form.organization) });
       router.push(`/agents/${agent.id}`);
-    } catch (e) { setError(e.message); }
+    } catch (e) {
+      if (e.message.toLowerCase().includes("limit")) {
+        router.push("/pricing?reason=limit");  // limit khatam -> seedha pricing page
+      } else {
+        setError(e.message);
+      }
+    }
     finally { setSaving(false); }
   }
 

@@ -49,8 +49,9 @@ export default function LoginPage() {
   async function handleLogin() {
     setError(""); setLoading(true);
     try {
-      await login(form.email, form.password);
-      router.push("/dashboard");
+      const data = await login(form.email, form.password);
+      // admin hai to admin panel, warna dashboard
+      router.push(data.is_platform_admin ? "/admin-panel" : "/dashboard");
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   }

@@ -96,7 +96,13 @@ function ScanForm() {
       };
       const report = await runScan(orgId, intake);
       router.push(`/report/${report.id}`);
-    } catch (e) { setError(e.message); }
+    } catch (e) {
+      if (e.message.toLowerCase().includes("limit")) {
+        router.push("/pricing");   // scan limit khatam -> pricing page
+      } else {
+        setError(e.message);
+      }
+    }
     finally { setLoading(false); }
   }
 
