@@ -28,12 +28,12 @@ export default function Dropdown({ label, value, onChange, options, placeholder 
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 w-full bg-[#12121a] border border-white/10 rounded-lg overflow-hidden shadow-xl shadow-black/50">
+        <div className="absolute z-30 mt-1 w-full bg-[#12121a] border border-white/10 rounded-lg overflow-hidden shadow-xl shadow-black/50 max-h-60 overflow-y-auto">
           {options.map((o) => (
             <button
               key={o}
               type="button"
-              onClick={() => { onChange(o); setOpen(false); }}
+              onMouseDown={(e) => { e.preventDefault(); onChange && onChange(o); setOpen(false); }}
               className={`w-full text-left px-3.5 py-2.5 text-sm transition ${
                 value === o ? "bg-indigo-500/20 text-indigo-300" : "text-slate-300 hover:bg-white/5"
               }`}

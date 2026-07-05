@@ -106,9 +106,9 @@ function ScanForm() {
   const steps = [
     <div key="s0" className="space-y-4">
       <Field label="Industry" k="industry" placeholder="e.g. retail, manufacturing, healthcare" {...p} />
-      <Dropdown label="Company size" k="company_size" options={["1-10", "11-50", "51-200", "201-500", "500+"]} {...p} />
+      <Dropdown label="Company size" value={form.company_size} onChange={(v) => set("company_size", v)} options={["1-10", "11-50", "51-200", "201-500", "500+"]} />
       <Field label="Team size (people doing daily operations)" k="team_size" placeholder="e.g. 20" {...p} />
-      <Dropdown label="Annual revenue" k="annual_revenue" options={["Under $100k", "$100k-$500k", "$500k-$1M", "$1M-$5M", "$5M+"]} {...p} />
+      <Dropdown label="Annual revenue" value={form.annual_revenue} onChange={(v) => set("annual_revenue", v)} options={["Under $100k", "$100k-$500k", "$500k-$1M", "$1M-$5M", "$5M+"]} />
       <Field label="Business age" k="business_age" placeholder="e.g. 5 years" {...p} />
       <Field label="Location" k="location" placeholder="e.g. Mumbai, India" {...p} />
     </div>,
@@ -119,17 +119,17 @@ function ScanForm() {
       <Field label="Which areas take the most time?" k="time_consuming_areas" placeholder="e.g. customer support and manual reporting" {...p} />
     </div>,
     <div key="s2" className="space-y-4">
-      <Dropdown label="Where is your data stored?" k="data_storage" options={["Mostly paper", "Excel/Sheets", "Basic software", "CRM/ERP system", "Cloud + integrated systems"]} {...p} />
-      <Dropdown label="Digital maturity" k="digital_maturity" options={["Very low (mostly manual)", "Low (basic tools)", "Moderate (some systems)", "High (integrated & digital)"]} {...p} />
+      <Dropdown label="Where is your data stored?" value={form.data_storage} onChange={(v) => set("data_storage", v)} options={["Mostly paper", "Excel/Sheets", "Basic software", "CRM/ERP system", "Cloud + integrated systems"]} />
+      <Dropdown label="Digital maturity" value={form.digital_maturity} onChange={(v) => set("digital_maturity", v)} options={["Very low (mostly manual)", "Low (basic tools)", "Moderate (some systems)", "High (integrated & digital)"]} />
       <Field label="Any existing automation?" k="existing_automation" placeholder="e.g. auto invoices, none, email automation" {...p} />
-      <Dropdown label="Do you have a website / app?" k="has_website_app" options={["No", "Website only", "App only", "Both website and app"]} {...p} />
+      <Dropdown label="Do you have a website / app?" value={form.has_website_app} onChange={(v) => set("has_website_app", v)} options={["No", "Website only", "App only", "Both website and app"]} />
     </div>,
     <div key="s3" className="space-y-4">
       <Field label="Main pain points" k="pain_points" placeholder="slow support, manual reports, high costs" hint="Separate with commas" {...p} />
       <Field label="Biggest bottleneck" k="biggest_bottleneck" placeholder="e.g. too much time on manual order processing" {...p} />
       <Field label="Goals" k="goals" placeholder="save time, grow sales, reduce cost" hint="Separate with commas" {...p} />
-      <Dropdown label="Budget for AI" k="ai_budget" options={["Not sure yet", "Under $500/mo", "$500-$2000/mo", "$2000-$10000/mo", "$10000+/mo"]} {...p} />
-      <Dropdown label="Timeline to adopt AI" k="timeline" options={["ASAP", "1-3 months", "3-6 months", "6-12 months", "Just exploring"]} {...p} />
+      <Dropdown label="Budget for AI" value={form.ai_budget} onChange={(v) => set("ai_budget", v)} options={["Not sure yet", "Under $500/mo", "$500-$2000/mo", "$2000-$10000/mo", "$10000+/mo"]} />
+      <Dropdown label="Timeline to adopt AI" value={form.timeline} onChange={(v) => set("timeline", v)} options={["ASAP", "1-3 months", "3-6 months", "6-12 months", "Just exploring"]} />
     </div>,
     <div key="s4" className="space-y-4">
       <Field label="Customer interaction channels" k="customer_channels" placeholder="calls, whatsapp, email, walk-in" hint="Separate with commas" {...p} />
