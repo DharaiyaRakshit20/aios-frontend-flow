@@ -113,3 +113,18 @@ export async function updateProfile(fullName) {
 export async function getOrganization(id) {
   return apiFetch(`/api/organizations/${id}/`);
 }
+
+// --- blueprint ---
+export async function generateBlueprint(reportId, opportunity) {
+  return apiFetch("/api/blueprint/generate", {
+    method: "POST",
+    body: JSON.stringify({ report: reportId, opportunity }),
+  });
+}
+export async function getBlueprint(id) {
+  return apiFetch(`/api/blueprint/${id}`);
+}
+
+export async function getReportBlueprints(reportId) {
+  return apiFetch(`/api/blueprint/list?report=${reportId}`);
+}

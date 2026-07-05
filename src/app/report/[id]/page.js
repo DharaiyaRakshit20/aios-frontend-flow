@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { getToken, getReport } from "@/lib/api";
+import { getToken, getReport, generateBlueprint, getReportBlueprints } from "@/lib/api";
 import AppShell from "../../components/AppShell";
 
 export default function ReportPage() {
@@ -9,10 +9,13 @@ export default function ReportPage() {
   const { id } = useParams();
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
+  const [generating, setGenerating] = useState(null);
+  const [blueprints, setBlueprints] = useState([]);
 
   useEffect(() => {
     if (!getToken()) { router.push("/login"); return; }
     getReport(id).then(setReport).catch((e) => setError(e.message));
+    getReportBlueprints(id).then((data) => setBlueprints(data.results || data)).catch(() => {});
   }, [id, router]);
 
   function downloadPdf() {
@@ -28,14 +31,25 @@ export default function ReportPage() {
       });
   }
 
-  if (error) return <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center text-red-400 p-8">{error}</div>;
-  if (!report) return <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center text-slate-500">Loading report...</div>;
+  async function handleBlueprint(op, i) {
+    setGenerating(i);
+    try {
+      const bp = await generateBlueprint(id, op);
+      router.push(`/blueprint/${bp.id}`);
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setGenerating(null);
+    }
+  }
 
-  // failed
+  if (error) return <AppShell><div className="max-w-3xl mx-auto px-4 py-10 text-red-400">{error}</div></AppShell>;
+  if (!report) return <AppShell><div className="max-w-3xl mx-auto px-4 py-10 text-slate-500">Loading report...</div></AppShell>;
+
   if (report.status === "failed") {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-4 text-white">
-        <div className="bg-white/[0.03] border border-red-500/20 rounded-2xl p-8 max-w-md text-center">
+      <AppShell>
+        <div className="max-w-md mx-auto px-4 py-20 text-center">
           <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 text-red-400 text-2xl">!</div>
           <h1 className="text-lg font-semibold mb-2">Scan failed</h1>
           <p className="text-slate-400 text-sm mb-6">This scan could not be completed. You can run the scan again.</p>
@@ -43,20 +57,19 @@ export default function ReportPage() {
             Back to dashboard
           </button>
         </div>
-      </div>
+      </AppShell>
     );
   }
 
-  // pending
   if (report.status === "pending") {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-4 text-white">
-        <div className="text-center">
+      <AppShell>
+        <div className="max-w-md mx-auto px-4 py-20 text-center">
           <div className="w-10 h-10 border-4 border-white/10 border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="font-medium">Analyzing your business...</p>
           <p className="text-slate-500 text-sm mt-1">This may take a few seconds</p>
         </div>
-      </div>
+      </AppShell>
     );
   }
 
@@ -99,7 +112,7 @@ export default function ReportPage() {
           </div>
         </div>
 
-        {/* savings + roi grid */}
+        {/* savings + roi */}
         <div className="grid sm:grid-cols-2 gap-4">
           {r.savings_estimate?.monthly_usd != null && (
             <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
@@ -123,19 +136,41 @@ export default function ReportPage() {
           )}
         </div>
 
-        {/* opportunities */}
+        {/* opportunities — with Generate Blueprint button */}
         {r.opportunity_matrix?.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold mb-3">Opportunities</h2>
             <div className="grid sm:grid-cols-2 gap-3">
               {r.opportunity_matrix.map((op, i) => (
-                <div key={i} className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 hover:border-indigo-500/30 transition">
+                <div key={i} className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 hover:border-indigo-500/30 transition flex flex-col">
                   <h3 className="font-medium mb-2">{op.area}</h3>
                   <div className="flex gap-2 mb-2">
                     <span className={`text-xs px-2 py-0.5 rounded-full border ${impactColor(op.impact)}`}>Impact: {op.impact}</span>
                     <span className="text-xs px-2 py-0.5 rounded-full border bg-white/5 text-slate-400 border-white/10">Effort: {op.effort}</span>
                   </div>
-                  <p className="text-sm text-slate-400">{op.description}</p>
+                  <p className="text-sm text-slate-400 flex-1">{op.description}</p>
+                  {(() => {
+                    const existing = blueprints.find((b) => b.opportunity_area === op.area);
+                    if (existing) {
+                      return (
+                        <button
+                          onClick={() => router.push(`/blueprint/${existing.id}`)}
+                          className="mt-4 text-sm bg-white/10 border border-white/10 rounded-lg px-3 py-2 font-medium hover:bg-white/20 transition"
+                        >
+                          View Blueprint →
+                        </button>
+                      );
+                    }
+                    return (
+                      <button
+                        onClick={() => handleBlueprint(op, i)}
+                        disabled={generating === i}
+                        className="mt-4 text-sm bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg px-3 py-2 font-medium hover:opacity-90 disabled:opacity-50 transition"
+                      >
+                        {generating === i ? "Generating blueprint..." : "Generate Blueprint →"}
+                      </button>
+                    );
+                  })()}
                 </div>
               ))}
             </div>
