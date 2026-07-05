@@ -8,6 +8,7 @@ export default function AppShell({ children }) {
 
   const navLinks = [
     { label: "Dashboard", path: "/dashboard" },
+    { label: "Agents", path: "/agents" },
     { label: "Profile", path: "/profile" },
     { label: "Activity", path: "/activity" },
   ];

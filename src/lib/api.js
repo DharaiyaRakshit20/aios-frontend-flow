@@ -128,3 +128,24 @@ export async function getBlueprint(id) {
 export async function getReportBlueprints(reportId) {
   return apiFetch(`/api/blueprint/list?report=${reportId}`);
 }
+
+// --- agents ---
+export async function getAgents(orgId) {
+  const q = orgId ? `?organization=${orgId}` : "";
+  return apiFetch(`/api/agents/${q}`);
+}
+export async function getAgent(id) {
+  return apiFetch(`/api/agents/${id}`);
+}
+export async function createAgent(payload) {
+  return apiFetch("/api/agents/", { method: "POST", body: JSON.stringify(payload) });
+}
+export async function deleteAgent(id) {
+  return apiFetch(`/api/agents/${id}`, { method: "DELETE" });
+}
+export async function getAgentMessages(id) {
+  return apiFetch(`/api/agents/${id}/messages`);
+}
+export async function sendAgentMessage(id, message) {
+  return apiFetch(`/api/agents/${id}/chat`, { method: "POST", body: JSON.stringify({ message }) });
+}

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { getToken, getBlueprint } from "@/lib/api";
+import { getToken, getBlueprint, getAgents } from "@/lib/api";
 import AppShell from "../../components/AppShell";
 
 export default function BlueprintPage() {
@@ -9,10 +9,19 @@ export default function BlueprintPage() {
   const { id } = useParams();
   const [bp, setBp] = useState(null);
   const [error, setError] = useState("");
+  const [existingAgent, setExistingAgent] = useState(null);
 
   useEffect(() => {
     if (!getToken()) { router.push("/login"); return; }
-    getBlueprint(id).then(setBp).catch((e) => setError(e.message));
+    getBlueprint(id).then((data) => {
+      setBp(data);
+      const agentName = `${data.opportunity_area} Agent`;
+      getAgents().then((res) => {
+        const list = res.results || res;
+        const found = list.find((a) => a.name === agentName);
+        if (found) setExistingAgent(found);
+      }).catch(() => {});
+    }).catch((e) => setError(e.message));
   }, [id, router]);
 
   if (error) return <AppShell><div className="max-w-3xl mx-auto px-4 py-10 text-red-400">{error}</div></AppShell>;
@@ -41,7 +50,30 @@ export default function BlueprintPage() {
         <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8">
           <span className="text-xs uppercase tracking-wide text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-3 py-1">Implementation Blueprint</span>
           <h1 className="text-2xl font-bold mt-4 mb-2">{r.title || bp.opportunity_area}</h1>
-          <p className="text-slate-400 text-sm">{r.overview}</p>
+          <p className="text-slate-400 text-sm mb-5">{r.overview}</p>
+          {existingAgent ? (
+            <button
+              onClick={() => router.push(`/agents/${existingAgent.id}`)}
+              className="text-sm bg-white/10 border border-white/10 rounded-lg px-4 py-2 font-medium hover:bg-white/20 transition"
+            >
+              Open AI Agent →
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                const params = new URLSearchParams({
+                  name: `${bp.opportunity_area} Agent`,
+                  role: bp.opportunity_area,
+                  description: r.overview || "",
+                  instructions: `You help with: ${bp.opportunity_area}. ${r.overview || ""}`,
+                });
+                router.push(`/agents/new?${params.toString()}`);
+              }}
+              className="text-sm bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg px-4 py-2 font-medium hover:opacity-90 transition"
+            >
+              + Create AI Agent for this
+            </button>
+          )}
         </div>
 
         <div className="grid sm:grid-cols-3 gap-4">
