@@ -71,15 +71,17 @@ reports = res.json()`,
     },
     {
       id: "agent", label: "Chat with an Agent",
-      method: "POST", path: "/api/agents/{id}/public-chat",
+      method: "POST", path: "/api/agents/{agent_id}/public-chat",
       desc: "Send a message to an AI agent and get a reply. Chats are not stored by Qevora — you keep the history.",
       snippets: {
-        curl: `curl ${apiUrl}/api/agents/1/public-chat \\
+        curl: `# Replace {agent_id} with your agent's ID (see it in the agent's page)
+curl ${apiUrl}/api/agents/{agent_id}/public-chat \\
   -H "Authorization: Api-Key qev_your_key" \\
   -H "Content-Type: application/json" \\
   -d '{"message": "What are your hours?", "history": []}'`,
-        javascript: `async function askAgent(message, history = []) {
-  const res = await fetch("${apiUrl}/api/agents/1/public-chat", {
+        javascript: `// Replace {agent_id} with your agent's ID
+async function askAgent(message, history = []) {
+  const res = await fetch("${apiUrl}/api/agents/{agent_id}/public-chat", {
     method: "POST",
     headers: {
       "Authorization": "Api-Key qev_your_key",
@@ -90,11 +92,12 @@ reports = res.json()`,
   const data = await res.json();
   return data.reply;  // agent's reply
 }`,
-        python: `import requests
+        python: `# Replace {agent_id} with your agent's ID
+import requests
 
 def ask_agent(message, history=None):
     res = requests.post(
-        "${apiUrl}/api/agents/1/public-chat",
+        "${apiUrl}/api/agents/{agent_id}/public-chat",
         headers={"Authorization": "Api-Key qev_your_key"},
         json={"message": message, "history": history or []},
     )
@@ -163,6 +166,15 @@ def ask_agent(message, history=None):
                 </div>
                 <code className="text-sm text-slate-400 bg-black/40 px-3 py-1.5 rounded-lg inline-block break-all">{current.path}</code>
                 <p className="text-slate-400 text-sm">{current.desc}</p>
+
+                {/* agent id helper — sirf agent endpoint pe */}
+                {current.id === "agent" && (
+                  <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-sm text-slate-400">
+                    <p className="text-white font-medium mb-1">Where do I find my agent ID?</p>
+                    <p>Open the agent from your <button onClick={() => router.push("/agents")} className="text-indigo-400 hover:text-indigo-300">Agents</button> page. The number in the address bar is your agent ID — for example, in <code className="text-indigo-300">/agents/4</code> the ID is <code className="text-indigo-300">4</code>. The agent&apos;s own <span className="text-white">&quot;API&quot;</span> and <span className="text-white">&quot;Add to Website&quot;</span> tabs also show ready-to-copy code with your ID already filled in.</p>
+                  </div>
+                )}
+
                 <CodeBlock snippets={current.snippets} />
               </div>
             )}
