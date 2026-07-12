@@ -9,6 +9,8 @@ export default function ProfilePage() {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [hasOwnKey, setHasOwnKey] = useState(false);
+  const [language, setLanguage] = useState("en");
+  const [langSaved, setLangSaved] = useState(false);
   const [aiKey, setAiKey] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -22,6 +24,7 @@ export default function ProfilePage() {
   function loadProfile() {
     getProfile().then((u) => {
       setEmail(u.email); setFullName(u.full_name || ""); setHasOwnKey(u.has_own_ai_key);
+      setLanguage(u.language || "en");
     }).catch((e) => setError(e.message)).finally(() => setLoading(false));
   }
 
@@ -35,6 +38,16 @@ export default function ProfilePage() {
     try { await updateProfile(fullName); setSaved(true); }
     catch (e) { setError(e.message); }
     finally { setSaving(false); }
+  }
+
+  async function handleLanguageChange(lang) {
+    setLanguage(lang);
+    setLangSaved(false);
+    try {
+      await updateProfile(undefined, undefined, lang);
+      setLangSaved(true);
+      setTimeout(() => setLangSaved(false), 2000);
+    } catch (e) { setError(e.message); }
   }
 
   async function handleSaveKey() {
@@ -111,6 +124,39 @@ export default function ProfilePage() {
             className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg px-5 py-2.5 font-medium hover:opacity-90 disabled:opacity-50 transition">
             {saving ? "Saving..." : "Save changes"}
           </button>
+        </div>
+
+        {/* language */}
+        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Language</h2>
+              <p className="text-slate-500 text-sm mt-1">Reports, blueprints, and agent replies will be in this language.</p>
+            </div>
+            {langSaved && <span className="text-xs text-emerald-400">Saved</span>}
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => handleLanguageChange("en")}
+              className={`flex-1 rounded-lg py-3 text-sm font-medium border transition ${
+                language === "en"
+                  ? "bg-gradient-to-r from-indigo-500 to-violet-500 border-transparent text-white"
+                  : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
+              }`}
+            >
+              🇬🇧 English
+            </button>
+            <button
+              onClick={() => handleLanguageChange("hi")}
+              className={`flex-1 rounded-lg py-3 text-sm font-medium border transition ${
+                language === "hi"
+                  ? "bg-gradient-to-r from-indigo-500 to-violet-500 border-transparent text-white"
+                  : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
+              }`}
+            >
+              🇮🇳 हिंदी
+            </button>
+          </div>
         </div>
 
         {/* own AI key */}

@@ -26,8 +26,8 @@ export default function AdminBilling() {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: "MRR", value: `$${data.mrr.toLocaleString()}`, sub: "Monthly recurring" },
-            { label: "ARR", value: `$${data.arr.toLocaleString()}`, sub: "Annual recurring" },
+            { label: "MRR", value: `₹${data.mrr.toLocaleString("en-IN")}`, sub: "Monthly recurring" },
+            { label: "ARR", value: `₹${data.arr.toLocaleString("en-IN")}`, sub: "Annual recurring" },
             { label: "Active Subs", value: data.total_subscriptions },
             { label: "Paid Subs", value: data.paid_subscriptions },
           ].map((c, i) => (
@@ -48,9 +48,9 @@ export default function AdminBilling() {
             {Object.entries(data.breakdown).map(([key, b]) => (
               <div key={key} className="grid grid-cols-4 gap-2 px-4 py-3 text-sm items-center border-b border-white/5 last:border-0">
                 <span className="font-medium">{b.name}</span>
-                <span className="text-slate-400">${b.price}/mo</span>
+                <span className="text-slate-400">₹{b.price.toLocaleString("en-IN")}/mo</span>
                 <span className="text-slate-400">{b.count}</span>
-                <span className="text-right text-emerald-400">${(b.price * b.count).toLocaleString()}/mo</span>
+                <span className="text-right text-emerald-400">₹{(b.price * b.count).toLocaleString("en-IN")}/mo</span>
               </div>
             ))}
           </div>

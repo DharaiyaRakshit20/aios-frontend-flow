@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { getToken, getBlueprint, getAgents } from "@/lib/api";
+import { getToken, getBlueprint, getAgents, translateBlueprint, getProfile } from "@/lib/api";
 import AppShell from "../../components/AppShell";
 
 export default function BlueprintPage() {
@@ -10,6 +10,8 @@ export default function BlueprintPage() {
   const [bp, setBp] = useState(null);
   const [error, setError] = useState("");
   const [existingAgent, setExistingAgent] = useState(null);
+  const [displayResult, setDisplayResult] = useState(null);
+  const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
     if (!getToken()) { router.push("/login"); return; }
@@ -23,6 +25,23 @@ export default function BlueprintPage() {
       }).catch(() => {});
     }).catch((e) => setError(e.message));
   }, [id, router]);
+
+  useEffect(() => {
+    if (!bp || !bp.result) return;
+    getProfile()
+      .then((u) => {
+        const userLang = u.language || "en";
+        const bpLang = bp.language || "en";
+        if (userLang === bpLang) { setDisplayResult(bp.result); return; }
+        setTranslating(true);
+        translateBlueprint(id, userLang)
+          .then((res) => setDisplayResult(res.result))
+          .catch(() => setDisplayResult(bp.result))
+          .finally(() => setTranslating(false));
+      })
+      .catch(() => setDisplayResult(bp.result));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bp]);
 
   if (error) return <AppShell><div className="max-w-3xl mx-auto px-4 py-10 text-red-400">{error}</div></AppShell>;
   if (!bp) return <AppShell><div className="max-w-3xl mx-auto px-4 py-10 text-slate-500">Loading blueprint...</div></AppShell>;
@@ -40,12 +59,20 @@ export default function BlueprintPage() {
     );
   }
 
-  const r = bp.result || {};
+  const r = displayResult || bp.result || {};
 
   return (
     <AppShell>
       <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
-        <button onClick={() => router.push(`/report/${bp.report}`)} className="text-sm text-slate-400 hover:text-white transition">← Back to report</button>
+        <div className="flex items-center justify-between">
+          <button onClick={() => router.push(`/report/${bp.report}`)} className="text-sm text-slate-400 hover:text-white transition">← Back to report</button>
+          {translating && (
+            <span className="text-xs text-indigo-400 flex items-center gap-1.5">
+              <span className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin"></span>
+              Translating...
+            </span>
+          )}
+        </div>
 
         <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8">
           <span className="text-xs uppercase tracking-wide text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-3 py-1">Implementation Blueprint</span>
@@ -65,7 +92,7 @@ export default function BlueprintPage() {
                   name: `${bp.opportunity_area} Agent`,
                   role: bp.opportunity_area,
                   description: r.overview || "",
-                  instructions: `You help with: ${bp.opportunity_area}. ${r.overview || ""}`,
+                  instructions: `You are an AI assistant focused on "${bp.opportunity_area}" for this business. ${r.overview || ""} Help users with tasks and questions related to this specific area. Be practical and specific to the business.`,
                 });
                 router.push(`/agents/new?${params.toString()}`);
               }}

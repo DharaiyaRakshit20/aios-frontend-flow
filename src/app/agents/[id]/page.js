@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { getToken, getAgent, getAgentMessages, sendAgentMessage, getApiKeys } from "@/lib/api";
+import { getToken, getAgent, getAgentMessages, sendAgentMessage, takeActionOrder, takeActionVerify } from "@/lib/api";
 import AppShell from "../../components/AppShell";
 import CodeBlock from "../../components/CodeBlock";
 
@@ -17,12 +17,21 @@ export default function AgentChatPage() {
   const [copied, setCopied] = useState(false);
   const [apiKeys, setApiKeys] = useState([]);
   const bottomRef = useRef(null);
+  const [showActionConfirm, setShowActionConfirm] = useState(false);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [actionDone, setActionDone] = useState(false);
 
   useEffect(() => {
     if (!getToken()) { router.push("/login"); return; }
     getAgent(id).then(setAgent).catch((e) => setError(e.message));
     getAgentMessages(id).then((d) => setMessages(d.results || d)).catch(() => {});
-    getApiKeys().then((d) => setApiKeys(d.results || d)).catch(() => {});
+
+    // razorpay script load karo (take action payment ke liye)
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
   }, [id, router]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, sending]);
@@ -38,6 +47,42 @@ export default function AgentChatPage() {
       setMessages((m) => [...m, reply]);
     } catch (e) { setError(e.message); }
     finally { setSending(false); }
+  }
+
+  async function handleTakeAction() {
+    setShowActionConfirm(false);
+    setActionBusy(true);
+    try {
+      const order = await takeActionOrder(id);
+      const options = {
+        key: order.key_id,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Qevora",
+        description: "Take Action — Activate your chatbot",
+        order_id: order.order_id,
+        handler: async function (response) {
+          try {
+            const res = await takeActionVerify(id, {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            setActionDone(true);
+            router.push(`/agents/${id}/action?slug=${res.slug}`);
+          } catch (e) {
+            alert("Verification failed: " + e.message);
+          } finally { setActionBusy(false); }
+        },
+        modal: { ondismiss: () => setActionBusy(false) },
+        theme: { color: "#6366f1" },
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (e) {
+      alert(e.message);
+      setActionBusy(false);
+    }
   }
 
   if (error && !agent) return <AppShell><div className="max-w-3xl mx-auto px-4 py-10 text-red-400">{error}</div></AppShell>;
@@ -96,15 +141,28 @@ def ask_agent(message, history=None):
     <AppShell>
       <div className="max-w-3xl mx-auto px-4 py-6">
         {/* header */}
-        <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => router.push("/agents")} className="text-slate-400 hover:text-white transition">←</button>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center font-bold">
-            {agent.name.charAt(0).toUpperCase()}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <button onClick={() => router.push("/agents")} className="text-slate-400 hover:text-white transition">←</button>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center font-bold">
+              {agent.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="font-medium">{agent.name}</p>
+              <p className="text-xs text-slate-500">{agent.role}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-medium">{agent.name}</p>
-            <p className="text-xs text-slate-500">{agent.role}</p>
-          </div>
+          {agent.is_public ? (
+            <button onClick={() => router.push(`/agents/${id}/action?slug=${agent.public_slug}`)}
+              className="text-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg px-4 py-2 hover:bg-emerald-500/20 transition">
+              ✓ Live — View setup
+            </button>
+          ) : (
+            <button onClick={() => setShowActionConfirm(true)} disabled={actionBusy}
+              className="text-sm bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg px-4 py-2 font-medium hover:opacity-90 disabled:opacity-50 transition">
+              {actionBusy ? "Processing..." : "⚡ Take Action"}
+            </button>
+          )}
         </div>
 
         {/* tabs */}
@@ -204,6 +262,20 @@ def ask_agent(message, history=None):
           </div>
         )}
       </div>
+      {showActionConfirm && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowActionConfirm(false)}>
+            <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center mx-auto mb-4 text-xl">⚡</div>
+              <h3 className="text-lg font-semibold mb-2 text-center">Take Action</h3>
+              <p className="text-slate-400 text-sm mb-1 text-center">Activate this agent as a live chatbot you can share with your customers.</p>
+              <p className="text-slate-500 text-xs mb-6 text-center">A one-time activation fee of <span className="text-white font-medium">₹1</span> applies.</p>
+              <div className="flex gap-3">
+                <button onClick={() => setShowActionConfirm(false)} className="flex-1 border border-white/10 text-slate-300 rounded-lg py-2.5 text-sm hover:bg-white/5 transition">Cancel</button>
+                <button onClick={handleTakeAction} className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg py-2.5 text-sm font-medium hover:opacity-90 transition">Pay ₹1 & Activate</button>
+              </div>
+            </div>
+          </div>
+        )}
     </AppShell>
   );
 }

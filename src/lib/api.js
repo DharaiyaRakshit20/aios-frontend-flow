@@ -108,10 +108,11 @@ export async function getProfile() {
   return apiFetch("/api/auth/me");
 }
 
-export async function updateProfile(fullName, ownAiKey) {
+export async function updateProfile(fullName, ownAiKey, language) {
   const body = {};
   if (fullName !== undefined) body.full_name = fullName;
   if (ownAiKey !== undefined) body.own_ai_key = ownAiKey;
+  if (language !== undefined) body.language = language;
   return apiFetch("/api/auth/me", {
     method: "PATCH",
     body: JSON.stringify(body),
@@ -258,5 +259,69 @@ export async function deleteMyAccount(confirmEmail) {
   return apiFetch("/api/auth/delete-account", {
     method: "DELETE",
     body: JSON.stringify({ confirm_email: confirmEmail }),
+  });
+}
+
+export async function getLastScanIntake(orgId) {
+  return apiFetch(`/api/scanner/last-intake/${orgId}`);
+}
+
+export async function deleteReport(id) {
+  return apiFetch(`/api/scanner/reports/${id}/delete`, { method: "DELETE" });
+}
+
+// --- scan drafts (backend) ---
+export async function saveDraft(orgId, form, step) {
+  return apiFetch("/api/scanner/draft", {
+    method: "POST",
+    body: JSON.stringify({ organization: orgId || null, form, step }),
+  });
+}
+export async function getDraft(orgId) {
+  const q = orgId ? `?org=${orgId}` : "";
+  return apiFetch(`/api/scanner/draft${q}`);
+}
+
+
+export async function deleteDraft(orgId) {
+  const q = orgId ? `?org=${orgId}` : "";
+  return apiFetch(`/api/scanner/draft${q}`, { method: "DELETE" });
+}
+export async function getMyDrafts() {
+  return apiFetch("/api/scanner/my-drafts");
+}
+
+export async function translateReport(id, language) {
+  return apiFetch(`/api/scanner/reports/${id}/translate`, {
+    method: "POST", body: JSON.stringify({ language }),
+  });
+}
+export async function translateBlueprint(id, language) {
+  return apiFetch(`/api/blueprint/${id}/translate`, {
+    method: "POST", body: JSON.stringify({ language }),
+  });
+}
+
+// --- razorpay payment ---
+export async function createOrder(plan) {
+  return apiFetch("/api/billing/create-order", {
+    method: "POST",
+    body: JSON.stringify({ plan }),
+  });
+}
+export async function verifyPayment(data) {
+  return apiFetch("/api/billing/verify-payment", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+// --- take action ---
+export async function takeActionOrder(agentId) {
+  return apiFetch(`/api/agents/${agentId}/take-action/order`, { method: "POST" });
+}
+export async function takeActionVerify(agentId, data) {
+  return apiFetch(`/api/agents/${agentId}/take-action/verify`, {
+    method: "POST", body: JSON.stringify(data),
   });
 }

@@ -1,8 +1,9 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 
-export default function Dropdown({ label, value, onChange, options, placeholder = "Select..." }) {
+export default function Dropdown({ label, value, onChange, options, placeholder = "Select...", allowOther = false }) {
   const [open, setOpen] = useState(false);
+  const [otherText, setOtherText] = useState("");
   const ref = useRef(null);
 
   useEffect(() => {
@@ -12,6 +13,16 @@ export default function Dropdown({ label, value, onChange, options, placeholder 
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
+
+  function pick(o) {
+    onChange(o);
+    setOpen(false);
+  }
+
+  function addOther() {
+    const t = otherText.trim();
+    if (t) { onChange(t); setOtherText(""); setOpen(false); }
+  }
 
   return (
     <div ref={ref} className="relative">
@@ -28,19 +39,34 @@ export default function Dropdown({ label, value, onChange, options, placeholder 
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 w-full bg-[#12121a] border border-white/10 rounded-lg overflow-hidden shadow-xl shadow-black/50 max-h-60 overflow-y-auto">
+        <div className="absolute z-30 mt-1 w-full bg-[#12121a] border border-white/10 rounded-lg overflow-hidden shadow-xl shadow-black/50 max-h-72 overflow-y-auto">
           {options.map((o) => (
             <button
               key={o}
               type="button"
-              onMouseDown={(e) => { e.preventDefault(); onChange && onChange(o); setOpen(false); }}
-              className={`w-full text-left px-3.5 py-2.5 text-sm transition ${
-                value === o ? "bg-indigo-500/20 text-indigo-300" : "text-slate-300 hover:bg-white/5"
-              }`}
+              onMouseDown={(e) => { e.preventDefault(); pick(o); }}
+              className={`w-full text-left px-3.5 py-2.5 text-sm transition ${value === o ? "bg-indigo-500/20 text-indigo-300" : "text-slate-300 hover:bg-white/5"}`}
             >
               {o}
             </button>
           ))}
+
+          {allowOther && (
+            <div className="border-t border-white/5 p-2 flex gap-2">
+              <input
+                className="flex-1 bg-white/5 border border-white/10 rounded-md px-2.5 py-1.5 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
+                placeholder="Other (type & add)"
+                value={otherText}
+                onChange={(e) => setOtherText(e.target.value)}
+                onMouseDown={(e) => e.stopPropagation()}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addOther(); } }}
+              />
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); addOther(); }}
+                className="text-xs bg-indigo-500/20 text-indigo-300 rounded-md px-3 hover:bg-indigo-500/30 transition">
+                Add
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

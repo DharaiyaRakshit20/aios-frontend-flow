@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { getToken, getReport, generateBlueprint, getReportBlueprints } from "@/lib/api";
+import { getToken, getReport, generateBlueprint, getReportBlueprints, translateReport, getProfile } from "@/lib/api";
 import AppShell from "../../components/AppShell";
 
 export default function ReportPage() {
@@ -11,12 +11,33 @@ export default function ReportPage() {
   const [error, setError] = useState("");
   const [generating, setGenerating] = useState(null);
   const [blueprints, setBlueprints] = useState([]);
+  const [displayResult, setDisplayResult] = useState(null);
+  const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
     if (!getToken()) { router.push("/login"); return; }
     getReport(id).then(setReport).catch((e) => setError(e.message));
     getReportBlueprints(id).then((data) => setBlueprints(data.results || data)).catch(() => {});
   }, [id, router]);
+
+  // auto-translate — sirf tab jab report ki language user ki language se alag ho
+  useEffect(() => {
+    if (!report || !report.result) return;
+    getProfile()
+      .then((u) => {
+        const userLang = u.language || "en";
+        const reportLang = report.language || "en";
+        // already same language -> translate mat karo
+        if (userLang === reportLang) { setDisplayResult(report.result); return; }
+        setTranslating(true);
+        translateReport(id, userLang)
+          .then((res) => setDisplayResult(res.result))
+          .catch(() => setDisplayResult(report.result))
+          .finally(() => setTranslating(false));
+      })
+      .catch(() => setDisplayResult(report.result));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [report]);
 
   function downloadPdf() {
     const token = localStorage.getItem("aios_token");
@@ -73,7 +94,7 @@ export default function ReportPage() {
     );
   }
 
-  const r = report.result || {};
+  const r = displayResult || report.result || {};
   const score = report.readiness_score ?? 0;
   const ring = score >= 70 ? "#34d399" : score >= 40 ? "#fbbf24" : "#f87171";
   const impactColor = (x) =>
@@ -84,7 +105,13 @@ export default function ReportPage() {
   return (
     <AppShell>
       <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
-        <div className="flex justify-end items-center">
+        <div className="flex justify-end items-center gap-3">
+          {translating && (
+            <span className="text-xs text-indigo-400 flex items-center gap-1.5">
+              <span className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin"></span>
+              Translating...
+            </span>
+          )}
           <button onClick={downloadPdf} className="text-sm bg-white/10 border border-white/10 rounded-lg px-4 py-2 hover:bg-white/20 transition">
             Download PDF
           </button>
@@ -114,11 +141,11 @@ export default function ReportPage() {
 
         {/* savings + roi */}
         <div className="grid sm:grid-cols-2 gap-4">
-          {r.savings_estimate?.monthly_usd != null && (
+          {r.savings_estimate?.monthly_inr != null && (
             <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6">
               <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Estimated Monthly Savings</h2>
               <p className="text-3xl font-bold text-emerald-400 mb-2">
-                ${Number(r.savings_estimate.monthly_usd).toLocaleString()}
+                ₹{Number(r.savings_estimate.monthly_inr).toLocaleString("en-IN")}
                 <span className="text-sm text-slate-500 font-normal"> / mo</span>
               </p>
               <p className="text-slate-400 text-sm">{r.savings_estimate.rationale}</p>
