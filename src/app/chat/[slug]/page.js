@@ -10,6 +10,7 @@ export default function HostedChat() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef(null);
+  const [sessionId] = useState(() => Math.random().toString(36).slice(2) + Date.now().toString(36));
 
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -33,7 +34,7 @@ export default function HostedChat() {
       const res = await fetch(`${API}/api/agents/public/${slug}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, history: messages }),
+        body: JSON.stringify({ message: text, history: messages, session_id: sessionId }),
       });
       const data = await res.json();
       setMessages([...newHistory, { role: "assistant", content: data.reply || "Sorry, something went wrong." }]);

@@ -325,3 +325,18 @@ export async function takeActionVerify(agentId, data) {
     method: "POST", body: JSON.stringify(data),
   });
 }
+
+// --- inquiries / orders ---
+export async function getInquiries(params = {}) {
+  const q = new URLSearchParams(params).toString();
+  return apiFetch(`/api/agents/inquiries${q ? "?" + q : ""}`);
+}
+export async function updateInquiryStatus(id, status) {
+  return apiFetch(`/api/agents/inquiries/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+export async function deleteInquiry(id) {
+  return apiFetch(`/api/agents/inquiries/${id}`, { method: "DELETE" });
+}
