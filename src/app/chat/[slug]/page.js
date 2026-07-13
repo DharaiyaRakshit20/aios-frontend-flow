@@ -11,8 +11,15 @@ export default function HostedChat() {
   const [sending, setSending] = useState(false);
   const bottomRef = useRef(null);
   const [sessionId] = useState(() => Math.random().toString(36).slice(2) + Date.now().toString(36));
+  const [lang, setLang] = useState("en");
 
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+  const T = {
+    en: { online: "Online", greeting: "👋 Hi! How can I help you today?", sub: "Ask me anything.", placeholder: "Type a message...", send: "Send", error: "Connection error. Please try again." },
+    hi: { online: "ऑनलाइन", greeting: "👋 नमस्ते! मैं आपकी कैसे मदद कर सकता हूँ?", sub: "कुछ भी पूछें।", placeholder: "मैसेज लिखें...", send: "भेजें", error: "कनेक्शन में समस्या। कृपया दोबारा कोशिश करें।" },
+  };
+  const t = T[lang] || T.en;
 
   useEffect(() => {
     fetch(`${API}/api/agents/public/${slug}/info`)
@@ -34,12 +41,12 @@ export default function HostedChat() {
       const res = await fetch(`${API}/api/agents/public/${slug}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, history: messages, session_id: sessionId }),
+        body: JSON.stringify({ message: text, history: messages, session_id: sessionId, lang }),
       });
       const data = await res.json();
       setMessages([...newHistory, { role: "assistant", content: data.reply || "Sorry, something went wrong." }]);
     } catch {
-      setMessages([...newHistory, { role: "assistant", content: "Connection error. Please try again." }]);
+      setMessages([...newHistory, { role: "assistant", content: t.error }]);
     } finally {
       setSending(false);
     }
@@ -67,11 +74,19 @@ export default function HostedChat() {
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center font-bold">
             {agent.name.charAt(0).toUpperCase()}
           </div>
-          <div>
-            <p className="font-medium">{agent.name}</p>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium truncate">{agent.name}</p>
             <p className="text-xs text-emerald-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span> Online
+              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span> {t.online}
             </p>
+          </div>
+          <div className="flex bg-white/5 border border-white/10 rounded-lg p-0.5 text-xs shrink-0">
+            {[["en", "EN"], ["hi", "हिं"]].map(([code, lbl]) => (
+              <button key={code} onClick={() => setLang(code)}
+                className={`px-2.5 py-1 rounded-md transition ${lang === code ? "bg-white/15 text-white" : "text-slate-400 hover:text-white"}`}>
+                {lbl}
+              </button>
+            ))}
           </div>
         </div>
       </header>
@@ -81,8 +96,8 @@ export default function HostedChat() {
         <div className="max-w-2xl mx-auto space-y-4">
           {messages.length === 0 && (
             <div className="text-center text-slate-500 py-16">
-              <p className="mb-1">👋 Hi! How can I help you today?</p>
-              <p className="text-xs">Ask me anything.</p>
+              <p className="mb-1">{t.greeting}</p>
+              <p className="text-xs">{t.sub}</p>
             </div>
           )}
           {messages.map((m, i) => (
@@ -116,14 +131,14 @@ export default function HostedChat() {
         <div className="max-w-2xl mx-auto flex gap-2">
           <input
             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none transition"
-            placeholder="Type a message..."
+            placeholder={t.placeholder}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") send(); }}
           />
           <button onClick={send} disabled={sending || !input.trim()}
             className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-xl px-5 font-medium hover:opacity-90 disabled:opacity-40 transition">
-            Send
+            {t.send}
           </button>
         </div>
         <p className="text-center text-xs text-slate-600 mt-3">Powered by Qevora</p>
