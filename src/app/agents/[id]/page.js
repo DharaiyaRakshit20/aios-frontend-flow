@@ -4,6 +4,7 @@ import { useRouter, useParams } from "next/navigation";
 import { getToken, getAgent, getAgentMessages, sendAgentMessage, takeActionOrder, takeActionVerify } from "@/lib/api";
 import AppShell from "../../components/AppShell";
 import CodeBlock from "../../components/CodeBlock";
+import ThumbFeedback from "../../components/ThumbFeedback";
 
 export default function AgentChatPage() {
   const router = useRouter();
@@ -190,6 +191,10 @@ def ask_agent(message, history=None):
                   <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${m.role === "user" ? "bg-gradient-to-r from-indigo-500 to-violet-500 text-white" : "bg-white/5 border border-white/10 text-slate-200"}`}>
                     {m.content}
                   </div>
+                  {/* YAHAN, message content ke neeche */}
+                  {m.role === "assistant" && (
+                    <ThumbFeedback targetType="agent_message" targetId={m.id || i} />
+                  )}
                 </div>
               ))}
               {sending && (

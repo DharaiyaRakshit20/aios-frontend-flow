@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getToken, getReport, generateBlueprint, getReportBlueprints, translateReport, getProfile } from "@/lib/api";
 import AppShell from "../../components/AppShell";
+import StarRating from "../../components/StarRating";
 
 export default function ReportPage() {
   const router = useRouter();
@@ -218,6 +219,7 @@ export default function ReportPage() {
             </ol>
           </div>
         )}
+        <StarRating targetType="report" targetId={id} />
       </div>
     </AppShell>
   );

@@ -340,3 +340,12 @@ export async function updateInquiryStatus(id, status) {
 export async function deleteInquiry(id) {
   return apiFetch(`/api/agents/inquiries/${id}`, { method: "DELETE" });
 }
+
+// --- feedback ---
+export async function submitFeedback(payload) {
+  return apiFetch("/api/feedback/submit", { method: "POST", body: JSON.stringify(payload) });
+}
+export async function getAdminFeedback() {
+  return apiFetch("/api/feedback/admin");
+}
+
