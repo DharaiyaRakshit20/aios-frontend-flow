@@ -38,11 +38,21 @@ export default function HostedChat() {
     setMessages(newHistory);
     setSending(true);
     try {
-      const res = await fetch(`${API}/api/agents/public/${slug}/chat`, {
+      const doFetch = () => fetch(`${API}/api/agents/public/${slug}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text, history: messages, session_id: sessionId, lang }),
+        signal: AbortSignal.timeout(60000), // 60 sec (backend jagne ka time)
       });
+
+      let res;
+      try {
+        res = await doFetch();
+      } catch {
+        // pehli koshish fail (shayad backend so raha tha) — 2 sec baad ek retry
+        await new Promise((r) => setTimeout(r, 2000));
+        res = await doFetch();
+      }
       const data = await res.json();
       setMessages([...newHistory, { role: "assistant", content: data.reply || "Sorry, something went wrong." }]);
     } catch {

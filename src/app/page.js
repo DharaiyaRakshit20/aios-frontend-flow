@@ -47,8 +47,8 @@ export default function Landing() {
             <button onClick={go} className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-xl px-7 py-3.5 font-medium hover:opacity-90 hover:scale-105 transition shadow-lg shadow-indigo-500/25">
               Scan your business free
             </button>
-            <button onClick={go} className="border border-white/15 rounded-xl px-7 py-3.5 font-medium hover:bg-white/5 transition">
-              See how it works
+            <button onClick={() => router.push("/demo")} className="border border-white/15 rounded-xl px-7 py-3.5 font-medium hover:bg-white/5 transition">
+              ▶ Watch live demo
             </button>
           </div>
         </section>

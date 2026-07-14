@@ -105,7 +105,7 @@ export default function Dashboard() {
 
   return (
     <AppShell>
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+      <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-8 max-w-6xl">
         {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg p-3">{error}</div>}
 
         {/* metrics */}
