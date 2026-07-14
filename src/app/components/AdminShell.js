@@ -10,6 +10,8 @@ export default function AdminShell({ children }) {
     { label: "Overview", path: "/admin-panel" },
     { label: "Users", path: "/admin-panel/users" },
     { label: "Billing", path: "/admin-panel/billing" },
+    { label: "Metrics", path: "/admin-panel/metrics" },
+    { label: "Feedback", path: "/admin-panel/feedback" },
   ];
 
   return (
