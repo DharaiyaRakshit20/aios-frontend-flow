@@ -35,9 +35,9 @@ export default function Landing() {
             AI Operating System for Business
           </span>
           <h1 className="text-5xl sm:text-7xl font-bold leading-[1.05] tracking-tight mb-6 animate-fade-up" style={{ animationDelay: "0.1s" }}>
-            Discover how AI can
+            Build Your AI Company.
             <span className="block bg-gradient-to-r from-indigo-400 via-violet-400 to-indigo-400 bg-[length:200%_auto] bg-clip-text text-transparent" style={{ animation: "gradientMove 4s ease infinite" }}>
-              transform your business
+              Without Hiring AI Engineers.
             </span>
           </h1>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-10 animate-fade-up" style={{ animationDelay: "0.2s" }}>
