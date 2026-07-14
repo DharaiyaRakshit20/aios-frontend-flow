@@ -53,6 +53,19 @@ export async function apiFetch(path, options = {}) {
     },
   });
   const data = await res.json().catch(() => ({}));
+
+  // token expire / invalid -> logout aur login pe bhejo
+  if (res.status === 401) {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refresh");
+      if (!window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login";
+      }
+    }
+    throw new Error("Session expired");
+  }
+
   if (!res.ok) throw new Error(data.detail || JSON.stringify(data));
   return data;
 }
