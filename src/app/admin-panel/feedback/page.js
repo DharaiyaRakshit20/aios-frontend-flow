@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getAdminFeedback } from "@/lib/api";
-import AppShell from "../../components/AppShell";
+import AdminShell from "../../components/AdminShell";
 
 export default function AdminFeedback() {
   const router = useRouter();
@@ -14,8 +14,8 @@ export default function AdminFeedback() {
     getAdminFeedback().then(setData).catch((e) => setError(e.message));
   }, [router]);
 
-  if (error) return <AppShell><div className="max-w-4xl mx-auto px-4 py-10 text-red-400">{error}</div></AppShell>;
-  if (!data) return <AppShell><div className="max-w-4xl mx-auto px-4 py-10 text-slate-500">Loading...</div></AppShell>;
+  if (error) return <AdminShell><div className="max-w-4xl mx-auto px-4 py-10 text-red-400">{error}</div></AdminShell>;
+  if (!data) return <AdminShell><div className="max-w-4xl mx-auto px-4 py-10 text-slate-500">Loading...</div></AdminShell>;
 
   const cards = [
     { label: "Avg Rating", value: data.avg_rating != null ? `${data.avg_rating} ★` : "—" },
@@ -25,7 +25,7 @@ export default function AdminFeedback() {
   ];
 
   return (
-    <AppShell>
+    <AdminShell>
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <h1 className="text-2xl font-bold">Feedback</h1>
 
@@ -55,7 +55,7 @@ export default function AdminFeedback() {
           {data.items.length === 0 && <p className="text-slate-500 text-sm">No feedback yet.</p>}
         </div>
       </div>
-    </AppShell>
+    </AdminShell>
   );
 }
 

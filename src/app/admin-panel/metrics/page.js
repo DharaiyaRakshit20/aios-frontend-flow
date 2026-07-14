@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getAdminMetrics } from "@/lib/api";
-import AppShell from "../../components/AppShell";
+import AdminShell from "../../components/AdminShell";
 
 export default function AdminMetrics() {
   const router = useRouter();
@@ -14,8 +14,8 @@ export default function AdminMetrics() {
     getAdminMetrics().then(setD).catch((e) => setError(e.message));
   }, [router]);
 
-  if (error) return <AppShell><div className="max-w-5xl mx-auto px-4 py-10 text-red-400">{error}</div></AppShell>;
-  if (!d) return <AppShell><div className="max-w-5xl mx-auto px-4 py-10 text-slate-500">Loading...</div></AppShell>;
+  if (error) return <AdminShell><div className="max-w-5xl mx-auto px-4 py-10 text-red-400">{error}</div></AdminShell>;
+  if (!d) return <AdminShell><div className="max-w-5xl mx-auto px-4 py-10 text-slate-500">Loading...</div></AdminShell>;
 
   const inr = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
 
@@ -32,7 +32,7 @@ export default function AdminMetrics() {
   ];
 
   return (
-    <AppShell>
+    <AdminShell>
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Platform Metrics</h1>
@@ -50,7 +50,7 @@ export default function AdminMetrics() {
           ))}
         </div>
       </div>
-    </AppShell>
+    </AdminShell>
   );
 }
 
