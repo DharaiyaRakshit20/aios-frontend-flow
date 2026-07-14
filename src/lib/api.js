@@ -349,3 +349,7 @@ export async function getAdminFeedback() {
   return apiFetch("/api/feedback/admin");
 }
 
+export async function getAdminMetrics() {
+  return apiFetch("/api/admin/metrics");
+}
+
