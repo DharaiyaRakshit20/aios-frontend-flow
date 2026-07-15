@@ -1,12 +1,13 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { login, register } from "@/lib/api";
+import { login, register, requestPasswordReset } from "@/lib/api";
 import Dropdown from "../components/Dropdown";
 
 export default function LoginPage() {
   const router = useRouter();
   const [isRegister, setIsRegister] = useState(false);
+  const [forgot, setForgot] = useState(null); // null | "form" | "sent"
   const [step, setStep] = useState(0); // 0 = personal, 1 = password
   const [form, setForm] = useState({
     full_name: "", email: "", phone: "", role: "",
@@ -38,7 +39,6 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      // confirm_password backend ko nahi bhejna
       const { confirm_password, ...payload } = form;
       await register(payload);
       router.push("/dashboard");
@@ -50,19 +50,43 @@ export default function LoginPage() {
     setError(""); setLoading(true);
     try {
       const data = await login(form.email, form.password);
-      // admin hai to admin panel, warna dashboard
       router.push(data.is_platform_admin ? "/admin-panel" : "/dashboard");
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   }
 
+  async function handleForgot() {
+    setError("");
+    if (!form.email.trim()) { setError("Please enter your email."); return; }
+    setLoading(true);
+    try {
+      await requestPasswordReset(form.email.trim());
+      setForgot("sent");
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  }
+
+  function openForgot() { setForgot("form"); setError(""); }
+  function backToLogin() { setForgot(null); setError(""); }
+
   function switchMode() {
     setIsRegister(!isRegister);
+    setForgot(null);
     setStep(0);
     setError("");
   }
 
   const input = "w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none transition";
+
+  const heading = forgot === "sent" ? "Check your email"
+    : forgot === "form" ? "Forgot your password?"
+    : !isRegister ? "Welcome back"
+    : step === 0 ? "Create your account" : "Set your password";
+
+  const subheading = forgot === "sent" ? "We've sent you a reset link"
+    : forgot === "form" ? "Enter your email and we'll send you a reset link"
+    : !isRegister ? "Log in to continue to Qevora"
+    : step === 0 ? "Step 1 of 2 · Your details" : "Step 2 of 2 · Password";
 
   return (
     <div className="min-h-screen w-full flex bg-[#0a0a0f] text-white">
@@ -98,16 +122,10 @@ export default function LoginPage() {
             <span className="text-lg font-semibold">Qevora</span>
           </div>
 
-          <h1 className="text-2xl font-bold mb-1">
-            {!isRegister ? "Welcome back" : step === 0 ? "Create your account" : "Set your password"}
-          </h1>
-          <p className="text-slate-400 text-sm mb-6">
-            {!isRegister ? "Log in to continue to Qevora"
-              : step === 0 ? "Step 1 of 2 · Your details"
-              : "Step 2 of 2 · Password"}
-          </p>
+          <h1 className="text-2xl font-bold mb-1">{heading}</h1>
+          <p className="text-slate-400 text-sm mb-6">{subheading}</p>
 
-          {isRegister && (
+          {isRegister && !forgot && (
             <div className="h-1.5 bg-white/5 rounded-full overflow-hidden mb-6">
               <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-300"
                    style={{ width: step === 0 ? "50%" : "100%" }} />
@@ -120,8 +138,48 @@ export default function LoginPage() {
             </div>
           )}
 
+          {/* FORGOT — email form */}
+          {forgot === "form" && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-slate-400 mb-1.5">Email</label>
+                <input className={input} placeholder="you@company.com" type="email" value={form.email}
+                  onChange={(e) => set("email", e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleForgot(); }} />
+              </div>
+              <button onClick={handleForgot} disabled={loading}
+                className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg py-2.5 font-medium hover:opacity-90 disabled:opacity-50 transition shadow-lg shadow-indigo-500/20">
+                {loading ? "Sending..." : "Send reset link"}
+              </button>
+              <button onClick={backToLogin} className="w-full text-sm text-slate-400 hover:text-white transition">
+                Back to login
+              </button>
+            </div>
+          )}
+
+          {/* FORGOT — sent */}
+          {forgot === "sent" && (
+            <div className="space-y-5">
+              <div className="bg-emerald-500/[0.06] border border-emerald-500/20 rounded-xl p-5 text-center">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/15 flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <p className="text-sm text-slate-300">
+                  If an account exists for <span className="text-white font-medium">{form.email}</span>, we&apos;ve sent a link to reset your password.
+                </p>
+                <p className="text-xs text-slate-500 mt-2">The link expires in 1 hour.</p>
+              </div>
+              <button onClick={backToLogin}
+                className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg py-2.5 font-medium hover:opacity-90 transition shadow-lg shadow-indigo-500/20">
+                Back to login
+              </button>
+            </div>
+          )}
+
           {/* LOGIN */}
-          {!isRegister && (
+          {!forgot && !isRegister && (
             <div className="space-y-4">
               <div>
                 <label className="block text-sm text-slate-400 mb-1.5">Email</label>
@@ -129,8 +187,13 @@ export default function LoginPage() {
               </div>
               <div>
                 <label className="block text-sm text-slate-400 mb-1.5">Password</label>
-                <input className={input} placeholder="••••••••" type="password" value={form.password} onChange={(e) => set("password", e.target.value)} />
+                <input className={input} placeholder="••••••••" type="password" value={form.password}
+                  onChange={(e) => set("password", e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleLogin(); }} />
               </div>
+              <button onClick={openForgot} className="text-xs text-slate-400 hover:text-indigo-400 transition">
+                Forgot password?
+              </button>
               <button onClick={handleLogin} disabled={loading}
                 className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg py-2.5 font-medium hover:opacity-90 disabled:opacity-50 transition shadow-lg shadow-indigo-500/20">
                 {loading ? "Please wait..." : "Log in"}
@@ -139,7 +202,7 @@ export default function LoginPage() {
           )}
 
           {/* REGISTER STEP 0 — Personal */}
-          {isRegister && step === 0 && (
+          {!forgot && isRegister && step === 0 && (
             <div className="space-y-4">
               <div>
                 <label className="block text-sm text-slate-400 mb-1.5">Full name</label>
@@ -167,7 +230,7 @@ export default function LoginPage() {
           )}
 
           {/* REGISTER STEP 1 — Password */}
-          {isRegister && step === 1 && (
+          {!forgot && isRegister && step === 1 && (
             <div className="space-y-4">
               <div>
                 <label className="block text-sm text-slate-400 mb-1.5">Password</label>
@@ -190,12 +253,14 @@ export default function LoginPage() {
             </div>
           )}
 
-          <p className="text-center text-sm text-slate-500 mt-6">
-            {isRegister ? "Already have an account?" : "New to Qevora?"}{" "}
-            <button onClick={switchMode} className="text-indigo-400 font-medium hover:text-indigo-300">
-              {isRegister ? "Log in" : "Create account"}
-            </button>
-          </p>
+          {!forgot && (
+            <p className="text-center text-sm text-slate-500 mt-6">
+              {isRegister ? "Already have an account?" : "New to Qevora?"}{" "}
+              <button onClick={switchMode} className="text-indigo-400 font-medium hover:text-indigo-300">
+                {isRegister ? "Log in" : "Create account"}
+              </button>
+            </p>
+          )}
         </div>
       </div>
     </div>

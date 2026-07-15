@@ -366,3 +366,16 @@ export async function getAdminMetrics() {
   return apiFetch("/api/admin/metrics");
 }
 
+// --- password reset ---
+export async function requestPasswordReset(email) {
+  return apiFetch("/api/auth/password-reset", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+export async function confirmPasswordReset(token, password) {
+  return apiFetch("/api/auth/password-reset/confirm", {
+    method: "POST",
+    body: JSON.stringify({ token, password }),
+  });
+}
