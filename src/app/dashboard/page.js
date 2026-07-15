@@ -223,9 +223,9 @@ export default function Dashboard() {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <div className={`text-2xl font-bold ${scoreColor(rep.readiness_score)}`}>
-                      {r.status === "done" ? (
-                        <span className="font-semibold">{r.readiness_score}</span>
-                      ) : r.status === "failed" ? (
+                      {rep.status === "done" ? (
+                        <span className="font-semibold">{rep.readiness_score}</span>
+                      ) : rep.status === "failed" ? (
                         <span className="text-xs text-red-400">Failed</span>
                       ) : (
                         <span className="text-xs text-amber-400 flex items-center gap-1.5">
