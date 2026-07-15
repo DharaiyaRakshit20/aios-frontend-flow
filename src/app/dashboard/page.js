@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, logout, getOrganizations, createOrganization, getReports, getDashboardStats, deleteReport, getMyDrafts  } from "@/lib/api";
 import AppShell from "../components/AppShell";
+import VerifyBanner from "../components/VerifyBanner";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -106,6 +107,7 @@ export default function Dashboard() {
   return (
     <AppShell>
       <div className="px-4 sm:px-6 lg:px-8 py-8 space-y-8 max-w-6xl">
+        <VerifyBanner />
         {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg p-3">{error}</div>}
 
         {/* metrics */}
@@ -180,7 +182,6 @@ export default function Dashboard() {
         </section>
 
         {/* reports */}
-        {/* reports */}
         <section>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <h2 className="text-lg font-semibold">Past Scans</h2>
@@ -222,7 +223,16 @@ export default function Dashboard() {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <div className={`text-2xl font-bold ${scoreColor(rep.readiness_score)}`}>
-                      {rep.readiness_score ?? "—"}
+                      {r.status === "done" ? (
+                        <span className="font-semibold">{r.readiness_score}</span>
+                      ) : r.status === "failed" ? (
+                        <span className="text-xs text-red-400">Failed</span>
+                      ) : (
+                        <span className="text-xs text-amber-400 flex items-center gap-1.5">
+                          <span className="w-3 h-3 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+                          Generating…
+                        </span>
+                      )}
                     </div>
                     <button
                       onClick={(e) => { e.stopPropagation(); setDeleteTarget(rep); }}

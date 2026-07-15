@@ -44,20 +44,30 @@ export async function login(email, password) {
 // --- generic authed request (har protected call isse jaayegi) ---
 export async function apiFetch(path, options = {}) {
   const token = getToken();
-  const res = await fetch(`${API_URL}${path}`, {
+  const opts = {
     ...options,
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
-  });
+    signal: AbortSignal.timeout(60000), // backend jagne ka time (Render cold start)
+  };
+
+  let res;
+  try {
+    res = await fetch(`${API_URL}${path}`, opts);
+  } catch {
+    // pehli koshish fail (server so raha tha) -> ek retry
+    await new Promise((r) => setTimeout(r, 2000));
+    res = await fetch(`${API_URL}${path}`, opts);
+  }
   const data = await res.json().catch(() => ({}));
 
   // token expire / invalid -> logout aur login pe bhejo
   if (res.status === 401) {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("token");
+      logout();
       localStorage.removeItem("refresh");
       if (!window.location.pathname.startsWith("/login")) {
         window.location.href = "/login";
@@ -378,4 +388,15 @@ export async function confirmPasswordReset(token, password) {
     method: "POST",
     body: JSON.stringify({ token, password }),
   });
+}
+
+// --- email verification ---
+export async function verifyEmail(token) {
+  return apiFetch("/api/auth/verify-email", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+export async function resendVerification() {
+  return apiFetch("/api/auth/verify-email/resend", { method: "POST" });
 }

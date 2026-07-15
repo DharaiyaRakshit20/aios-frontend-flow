@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { login, register, requestPasswordReset } from "@/lib/api";
 import Dropdown from "../components/Dropdown";
+import { useState, useEffect } from "react";
+import { login, register, requestPasswordReset, logout } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,6 +17,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   function set(k, v) { setForm((f) => ({ ...f, [k]: v })); }
+
+  // login page pe aaye = koi valid session nahi. Purana/expired token saaf karo.
+  useEffect(() => {
+    logout();
+  }, []);
 
   function goToPassword() {
     setError("");

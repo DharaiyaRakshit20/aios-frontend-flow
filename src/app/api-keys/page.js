@@ -24,7 +24,11 @@ export default function ApiKeysPage() {
   }, [router]);
 
   async function handleCreate() {
-    if (!newName.trim()) return;
+    if (creating) return;
+    if (!newName.trim()) {
+      setError("Please enter a name for your key.");
+      return;
+    }
     setCreating(true); setError("");
     try {
       const res = await createApiKey(newName.trim());
@@ -76,17 +80,18 @@ export default function ApiKeysPage() {
 
         {/* create */}
         <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5">
-          <p className="text-sm font-medium mb-3">Create a new key</p>
-          <div className="flex gap-2">
+          <p className="text-sm font-medium mb-1">Create a new key</p>
+          <p className="text-xs text-slate-500 mb-3">Give it a name so you can recognise it later.</p>
+          <div className="flex flex-col sm:flex-row gap-2">
             <input
               className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none transition"
               placeholder="Key name (e.g. My integration)"
               value={newName}
-              onChange={(e) => setNewName(e.target.value)}
+              onChange={(e) => { setNewName(e.target.value); if (error) setError(""); }}
               onKeyDown={(e) => { if (e.key === "Enter") handleCreate(); }}
             />
-            <button onClick={handleCreate} disabled={creating}
-              className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg px-5 py-2.5 text-sm font-medium hover:opacity-90 disabled:opacity-50 transition whitespace-nowrap">
+            <button onClick={handleCreate} disabled={creating || !newName.trim()}
+              className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg px-5 py-2.5 text-sm font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition whitespace-nowrap">
               {creating ? "Creating..." : "Generate key"}
             </button>
           </div>
@@ -95,7 +100,17 @@ export default function ApiKeysPage() {
         {/* list */}
         <div className="bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden">
           {keys.length === 0 ? (
-            <p className="px-4 py-8 text-center text-slate-500 text-sm">No API keys yet.</p>
+            <div className="px-6 py-10 text-center">
+              <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-3">
+                <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+              </div>
+              <p className="text-sm font-medium mb-1">No API keys yet</p>
+              <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                An API key lets your own apps or scripts use Qevora — run scans, fetch reports, and chat with your agents. Create one above to get started.
+              </p>
+            </div>
           ) : keys.map((k) => (
             <div key={k.id} className="flex items-center justify-between px-4 py-3 border-b border-white/5 last:border-0">
               <div className="min-w-0">
@@ -117,6 +132,10 @@ export default function ApiKeysPage() {
 {`curl ${apiUrl}/api/scanner/reports \\
   -H "Authorization: Api-Key qev_your_key_here"`}
           </pre>
+          <button onClick={() => router.push("/docs")}
+            className="text-xs text-indigo-400 hover:text-indigo-300 transition mt-3">
+            See full API reference →
+          </button>
         </div>
       </div>
     </AppShell>
