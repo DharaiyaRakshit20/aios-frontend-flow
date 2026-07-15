@@ -33,6 +33,7 @@ export default function LoginPage() {
   }
 
   async function handleRegister() {
+    if (loading) return;
     setError("");
     if (form.password.length < 8) {
       setError("Password must be at least 8 characters.");
@@ -52,7 +53,16 @@ export default function LoginPage() {
   }
 
   async function handleLogin() {
-    setError(""); setLoading(true);
+    setError("");
+    if (!form.email.trim() || !form.password) {
+      setError("Please enter your email and password.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    setLoading(true);
     try {
       const data = await login(form.email, form.password);
       router.push(data.is_platform_admin ? "/admin-panel" : "/dashboard");
