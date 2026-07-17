@@ -6,6 +6,7 @@ import {
   getOrgMembers, addOrgMember, removeOrgMember,
 } from "@/lib/api";
 import AppShell from "../../components/AppShell";
+import PageLoader from "../../components/PageLoader";
 
 export default function OrgSettings() {
   const router = useRouter();
@@ -64,7 +65,7 @@ export default function OrgSettings() {
     catch (e) { setMemberMsg(e.message); }
   }
 
-  if (loading) return <AppShell><div className="max-w-xl mx-auto px-4 py-10 text-slate-500">Loading...</div></AppShell>;
+  if (loading) return <AppShell><PageLoader /></AppShell>;
 
   return (
     <AppShell>

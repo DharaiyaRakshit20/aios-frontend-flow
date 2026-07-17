@@ -2,6 +2,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { confirmPasswordReset } from "@/lib/api";
+import PageLoader from "../components/PageLoader";
 
 function ResetContent() {
   const router = useRouter();
@@ -93,7 +94,7 @@ export default function ResetPassword() {
           <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center font-bold">Q</div>
           <span className="text-xl font-semibold">Qevora</span>
         </button>
-        <Suspense fallback={<div className="text-center text-slate-500">Loading...</div>}>
+        <Suspense fallback={<PageLoader />}>
           <ResetContent />
         </Suspense>
       </div>

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getAdminMetrics } from "@/lib/api";
 import AdminShell from "../../components/AdminShell";
+import PageLoader from "../components/PageLoader";
 
 export default function AdminMetrics() {
   const router = useRouter();
@@ -15,7 +16,7 @@ export default function AdminMetrics() {
   }, [router]);
 
   if (error) return <AdminShell><div className="max-w-5xl mx-auto px-4 py-10 text-red-400">{error}</div></AdminShell>;
-  if (!d) return <AdminShell><div className="max-w-5xl mx-auto px-4 py-10 text-slate-500">Loading...</div></AdminShell>;
+  if (!d) return <AdminShell><PageLoader /></AdminShell>;
 
   const inr = (n) => `₹${Number(n || 0).toLocaleString("en-IN")}`;
 

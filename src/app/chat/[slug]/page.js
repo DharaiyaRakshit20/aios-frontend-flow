@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
+import PageLoader from "../components/PageLoader";
 
 export default function HostedChat() {
   const { slug } = useParams();
@@ -73,7 +74,7 @@ export default function HostedChat() {
   }
 
   if (!agent) {
-    return <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center text-slate-500">Loading...</div>;
+    return <PageLoader />;
   }
 
   return (

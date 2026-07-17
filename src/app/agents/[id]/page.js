@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { getToken, getAgent, getAgentMessages, sendAgentMessage, takeActionOrder, takeActionVerify } from "@/lib/api";
+import { getToken, getAgent, getAgentMessages, sendAgentMessage, takeActionOrder, takeActionVerify, getApiKeys } from "@/lib/api";
 import AppShell from "../../components/AppShell";
 import CodeBlock from "../../components/CodeBlock";
 import ThumbFeedback from "../../components/ThumbFeedback";
+import PageLoader from "../../components/PageLoader";
 
 export default function AgentChatPage() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export default function AgentChatPage() {
     if (!getToken()) { router.push("/login"); return; }
     getAgent(id).then(setAgent).catch((e) => setError(e.message));
     getAgentMessages(id).then((d) => setMessages(d.results || d)).catch(() => {});
+    getApiKeys().then((d) => setApiKeys(d.results || d)).catch(() => {});
 
     // razorpay script load karo (take action payment ke liye)
     const script = document.createElement("script");
@@ -87,7 +89,7 @@ export default function AgentChatPage() {
   }
 
   if (error && !agent) return <AppShell><div className="max-w-3xl mx-auto px-4 py-10 text-red-400">{error}</div></AppShell>;
-  if (!agent) return <AppShell><div className="max-w-3xl mx-auto px-4 py-10 text-slate-500">Loading agent...</div></AppShell>;
+  if (!agent) return <AppShell><PageLoader /></AppShell>;
 
   // base url — trailing slash hata do (double-slash bug fix)
   const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/+$/, "");
@@ -186,14 +188,13 @@ def ask_agent(message, history=None):
                   <p className="text-xs">Ask it something a real customer might ask.</p>
                 </div>
               )}
-              {messages.map((m) => (
-                <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+              {messages.map((m, i) => (
+                <div key={m.id || i} className={`flex flex-col ${m.role === "user" ? "items-end" : "items-start"}`}>
                   <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${m.role === "user" ? "bg-gradient-to-r from-indigo-500 to-violet-500 text-white" : "bg-white/5 border border-white/10 text-slate-200"}`}>
                     {m.content}
                   </div>
-                  {/* YAHAN, message content ke neeche */}
-                  {m.role === "assistant" && (
-                    <ThumbFeedback targetType="agent_message" targetId={m.id || i} />
+                  {m.role === "assistant" && !String(m.id).startsWith("tmp-") && (
+                    <ThumbFeedback targetType="agent_message" targetId={m.id} />
                   )}
                 </div>
               ))}

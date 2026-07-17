@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getInquiries, updateInquiryStatus, deleteInquiry } from "@/lib/api";
 import AppShell from "../components/AppShell";
+import PageLoader from "../components/PageLoader";
 
 const TABS = [
   { key: "all", label: "All" },
@@ -70,7 +71,7 @@ export default function InquiriesPage() {
       .some((v) => (v || "").toLowerCase().includes(q));
   });
 
-  if (loading) return <AppShell><div className="max-w-4xl mx-auto px-4 py-10 text-slate-500">Loading...</div></AppShell>;
+  if (loading) return <AppShell><PageLoader /></AppShell>;
 
   return (
     <AppShell>

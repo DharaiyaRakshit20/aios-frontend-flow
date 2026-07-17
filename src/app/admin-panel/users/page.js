@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getPlatformUsers, setUserActive } from "@/lib/api";
 import AdminShell from "../../components/AdminShell";
+import PageLoader from "../components/PageLoader";
 
 export default function AdminUsers() {
   const router = useRouter();
@@ -42,7 +43,7 @@ export default function AdminUsers() {
           onChange={(e) => { setSearch(e.target.value); load(e.target.value); }}
         />
 
-        {loading ? <p className="text-slate-500">Loading...</p> : (
+        {loading ? <PageLoader /> : (
           <div className="bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden">
             <div className="grid grid-cols-12 gap-2 px-4 py-3 text-xs text-slate-500 uppercase tracking-wide border-b border-white/5">
               <span className="col-span-4">Email</span>

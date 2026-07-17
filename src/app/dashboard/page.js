@@ -1,22 +1,45 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getToken, logout, getOrganizations, createOrganization, getReports, getDashboardStats, deleteReport, getMyDrafts  } from "@/lib/api";
+import { getToken, getOrganizations, getReports, getDashboardStats, deleteReport, getMyDrafts } from "@/lib/api";
 import AppShell from "../components/AppShell";
 import VerifyBanner from "../components/VerifyBanner";
+import PageLoader from "../components/PageLoader";
 
 export default function Dashboard() {
   const router = useRouter();
   const [orgs, setOrgs] = useState([]);
   const [reports, setReports] = useState([]);
   const [stats, setStats] = useState(null);
-  const [newName, setNewName] = useState("");
-  const [newIndustry, setNewIndustry] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [draftOrgs, setDraftOrgs] = useState({});
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  useEffect(() => {
+    if (!getToken()) { router.push("/login"); return; }
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router]);
+
+  async function loadData() {
+    try {
+      const [o, r, s, d] = await Promise.all([
+        getOrganizations(), getReports(), getDashboardStats(), getMyDrafts().catch(() => ({ org_ids: [] })),
+      ]);
+      setOrgs(o);
+      setReports(r);
+      setStats(s);
+      const map = {};
+      (d.org_ids || []).forEach((id) => { if (id) map[String(id)] = true; });
+      setDraftOrgs(map);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleDeleteReport() {
     if (!deleteTarget) return;
@@ -36,73 +59,13 @@ export default function Dashboard() {
     return summary.includes(q) || org.includes(q) || `report #${rep.id}`.includes(q);
   });
 
-  useEffect(() => {
-    if (!getToken()) { router.push("/login"); return; }
-    loadData();
-  }, [router]);
-
-  // localStorage se pata karo kaunse orgs ke draft hain
-  useEffect(() => {
-    const drafts = {};
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith("qevora_scan_draft_")) {
-          const data = JSON.parse(localStorage.getItem(key));
-          const filled = data.form && Object.values(data.form).some((v) =>
-            Array.isArray(v) ? v.length > 0 : v && v.toString().trim() !== "");
-          if (filled) {
-            const orgId = key.replace("qevora_scan_draft_", "");
-            drafts[orgId] = true;
-          }
-        }
-      }
-    } catch {}
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setDraftOrgs(drafts);
-  }, [loading]);
-
-  // backend se pata karo kaunse orgs ke draft hain
-  useEffect(() => {
-    getMyDrafts()
-      .then((res) => {
-        const map = {};
-        (res.org_ids || []).forEach((id) => { if (id) map[String(id)] = true; });
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setDraftOrgs(map);
-      })
-      .catch(() => {});
-  }, [loading]);
-
-  async function loadData() {
-    try {
-      const [o, r, s] = await Promise.all([getOrganizations(), getReports(), getDashboardStats()]);
-      setOrgs(o);
-      setReports(r);
-      setStats(s);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleCreateOrg() {
-    if (!newName) return;
-    try {
-      await createOrganization(newName, newIndustry);
-      setNewName(""); setNewIndustry("");
-      loadData();
-    } catch (e) { setError(e.message); }
-  }
-
   function scoreColor(s) {
     if (s >= 70) return "text-emerald-400";
     if (s >= 40) return "text-amber-400";
     return s != null ? "text-red-400" : "text-slate-600";
   }
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center text-slate-500">Loading...</div>;
+  if (loading) return <AppShell><PageLoader /></AppShell>;
 
   return (
     <AppShell>
@@ -128,18 +91,23 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* organizations */}
+        {/* organizations — sirf 2, baaki Organizations page pe */}
         <section>
-          <h2 className="text-lg font-semibold mb-4">Your Organizations</h2>
-          <div className="grid sm:grid-cols-2 gap-4 mb-4">
-            {orgs.map((org) => (
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Your Organizations</h2>
+            <button onClick={() => router.push("/organizations")} className="text-sm text-indigo-400 hover:text-indigo-300 transition">
+              {orgs.length > 2 ? `View all (${orgs.length}) →` : "Manage →"}
+            </button>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {orgs.slice(0, 2).map((org) => (
               <div key={org.id} className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 hover:border-white/20 transition">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium">{org.name}</p>
-                    <p className="text-sm text-slate-500">{org.industry || "—"}</p>
+                <div className="flex justify-between items-center gap-2">
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{org.name}</p>
+                    <p className="text-sm text-slate-500 truncate">{org.industry || "—"}</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => router.push(`/org/${org.id}`)}
                       className="border border-white/10 text-slate-300 text-sm rounded-lg px-3 py-1.5 hover:bg-white/5 transition"
@@ -157,27 +125,13 @@ export default function Dashboard() {
               </div>
             ))}
             {orgs.length === 0 && (
-              <p className="text-slate-500 text-sm col-span-2">No organizations yet. Create one below.</p>
+              <div className="col-span-2 bg-white/[0.03] border border-white/10 rounded-2xl p-8 text-center">
+                <p className="text-slate-400 text-sm mb-3">No organizations yet.</p>
+                <button onClick={() => router.push("/organizations")} className="text-indigo-400 hover:text-indigo-300 text-sm">
+                  Add your first organization →
+                </button>
+              </div>
             )}
-          </div>
-
-          {/* create org */}
-          <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 flex flex-wrap gap-2 items-center">
-            <input
-              className="flex-1 min-w-[140px] bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none transition"
-              placeholder="Company name"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-            />
-            <input
-              className="flex-1 min-w-[140px] bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none transition"
-              placeholder="Industry (optional)"
-              value={newIndustry}
-              onChange={(e) => setNewIndustry(e.target.value)}
-            />
-            <button onClick={handleCreateOrg} className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg px-5 py-2.5 font-medium hover:opacity-90 transition">
-              Add
-            </button>
           </div>
         </section>
 
@@ -222,7 +176,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <div className={`text-2xl font-bold ${scoreColor(rep.readiness_score)}`}>
+                    <div className={rep.status === "done" ? `text-2xl font-bold ${scoreColor(rep.readiness_score)}` : ""}>
                       {rep.status === "done" ? (
                         <span className="font-semibold">{rep.readiness_score}</span>
                       ) : rep.status === "failed" ? (
@@ -245,13 +199,14 @@ export default function Dashboard() {
               );
             })}
             {reports.length === 0 && (
-              <p className="text-slate-500 text-sm">No scans yet. Run your first scan above.</p>
+              <p className="text-slate-500 text-sm">No scans yet. Run your first scan from an organization above.</p>
             )}
             {reports.length > 0 && filteredReports.length === 0 && (
               <p className="text-slate-500 text-sm">No scans match your search.</p>
             )}
           </div>
         </section>
+
         {/* drafts */}
         {Object.keys(draftOrgs).length > 0 && (
           <section>
@@ -277,18 +232,19 @@ export default function Dashboard() {
           </section>
         )}
       </div>
+
       {deleteTarget && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setDeleteTarget(null)}>
-            <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
-              <h3 className="text-lg font-semibold mb-2">Delete this scan?</h3>
-              <p className="text-slate-400 text-sm mb-6">This report will be permanently removed. This cannot be undone.</p>
-              <div className="flex gap-3 justify-end">
-                <button onClick={() => setDeleteTarget(null)} className="text-slate-400 hover:text-white text-sm px-4 py-2 transition">Cancel</button>
-                <button onClick={handleDeleteReport} className="bg-red-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-red-700 transition">Delete</button>
-              </div>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setDeleteTarget(null)}>
+          <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-2">Delete this scan?</h3>
+            <p className="text-slate-400 text-sm mb-6">This report will be permanently removed. This cannot be undone.</p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setDeleteTarget(null)} className="text-slate-400 hover:text-white text-sm px-4 py-2 transition">Cancel</button>
+              <button onClick={handleDeleteReport} className="bg-red-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-red-700 transition">Delete</button>
             </div>
           </div>
-        )}
+        </div>
+      )}
     </AppShell>
   );
 }

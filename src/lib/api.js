@@ -66,9 +66,8 @@ export async function apiFetch(path, options = {}) {
 
   // token expire / invalid -> logout aur login pe bhejo
   if (res.status === 401) {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && token) {   // <- token tha, tabhi redirect
       logout();
-      localStorage.removeItem("refresh");
       if (!window.location.pathname.startsWith("/login")) {
         window.location.href = "/login";
       }

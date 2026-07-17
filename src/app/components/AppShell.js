@@ -5,6 +5,7 @@ import { logout, getNotifications, getUnreadCount, markNotificationsRead, clearN
 
 const NAV = [
   { label: "Dashboard", path: "/dashboard", icon: "M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" },
+  { label: "Organizations", path: "/organizations", icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" },
   { label: "Agents", path: "/agents", icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4-.8L3 21l1.8-4A7.94 7.94 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" },
   { label: "Inquiries", path: "/inquiries", icon: "M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" },
   { label: "Pricing", path: "/pricing", icon: "M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.99 1.99 0 013 12V7a4 4 0 014-4z" },
@@ -47,7 +48,6 @@ export default function AppShell({ children }) {
     if (!open) {
       const data = await getNotifications().catch(() => []);
       setNotifs(data.results || data || []);
-      if (unread > 0) { markNotificationsRead().catch(() => {}); setUnread(0); }
     }
     setOpen((o) => !o);
   }
@@ -63,10 +63,25 @@ export default function AppShell({ children }) {
     setNotifs([]); setUnread(0);
   }
 
+  async function handleMarkAllRead(e) {
+    e.stopPropagation();
+    await markNotificationsRead().catch(() => {});
+    setNotifs((list) => list.map((n) => ({ ...n, is_read: true })));
+    setUnread(0);
+  }
   async function handleClearOne(e, id) {
     e.stopPropagation();
     await clearNotifications(id).catch(() => {});
     setNotifs((list) => list.filter((n) => n.id !== id));
+  }
+
+  function timeAgo(d) {
+    const s = Math.floor((Date.now() - new Date(d)) / 1000);
+    if (s < 60) return "just now";
+    if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+    if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+    if (s < 604800) return `${Math.floor(s / 86400)}d ago`;
+    return new Date(d).toLocaleDateString();
   }
 
   const displayName = user?.full_name || user?.email || "Account";
@@ -141,21 +156,31 @@ export default function AppShell({ children }) {
 
               {open && (
                 <div className="absolute right-0 mt-3 w-[calc(100vw-2rem)] sm:w-80 bg-[#12121a] border border-white/10 rounded-xl shadow-xl shadow-black/50 overflow-hidden z-50">
-                  <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
+                  <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between gap-2">
                     <span className="text-sm font-medium">Notifications</span>
                     {notifs.length > 0 && (
-                      <button onClick={handleClearAll} className="text-xs text-slate-500 hover:text-red-400 transition">Clear all</button>
+                      <div className="flex items-center gap-3">
+                        {notifs.some((n) => !n.is_read) && (
+                          <button onClick={handleMarkAllRead} className="text-xs text-slate-500 hover:text-indigo-400 transition">Mark all read</button>
+                        )}
+                        <button onClick={handleClearAll} className="text-xs text-slate-500 hover:text-red-400 transition">Clear all</button>
+                      </div>
                     )}
                   </div>
-                  <div className="max-h-96 overflow-y-auto">
+                  <div className="max-h-96 overflow-y-auto no-scrollbar">
                     {notifs.length === 0 ? (
                       <p className="px-4 py-8 text-center text-slate-500 text-sm">No notifications yet.</p>
                     ) : notifs.map((n) => (
                       <div key={n.id} className={`relative group border-b border-white/5 last:border-0 ${!n.is_read ? "bg-indigo-500/5" : ""}`}>
                         <button onClick={() => openNotif(n)} className="w-full text-left px-4 py-3 pr-8 hover:bg-white/5 transition">
-                          <p className="text-sm font-medium">{n.title}</p>
-                          {n.message && <p className="text-xs text-slate-400 mt-0.5">{n.message}</p>}
-                          <p className="text-xs text-slate-600 mt-1">{new Date(n.created_at).toLocaleString()}</p>
+                          <div className="flex items-start gap-2">
+                            {!n.is_read && <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 mt-1.5" />}
+                            <div className={`min-w-0 ${n.is_read ? "pl-3.5" : ""}`}>
+                              <p className={`text-sm ${n.is_read ? "text-slate-300" : "font-medium text-white"}`}>{n.title}</p>
+                              {n.message && <p className="text-xs text-slate-400 mt-0.5">{n.message}</p>}
+                              <p className="text-xs text-slate-600 mt-1">{timeAgo(n.created_at)}</p>
+                            </div>
+                          </div>
                         </button>
                         <button onClick={(e) => handleClearOne(e, n.id)}
                           className="absolute top-3 right-3 text-slate-600 hover:text-red-400 text-xs opacity-0 group-hover:opacity-100 transition">✕</button>

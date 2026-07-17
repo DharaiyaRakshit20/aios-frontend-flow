@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken } from "@/lib/api";
 import Reveal from "./components/Reveal";
+import RoiSimulator from "./components/RoiSimulator";
 
 export default function Landing() {
   const router = useRouter();
@@ -209,6 +210,13 @@ export default function Landing() {
                 </div>
               ))}
             </div>
+          </Reveal>
+        </section>
+
+        {/* ROI SIMULATOR */}
+        <section id="roi" className="max-w-5xl mx-auto px-6 pb-24">
+          <Reveal>
+            <RoiSimulator />
           </Reveal>
         </section>
 

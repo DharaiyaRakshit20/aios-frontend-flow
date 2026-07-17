@@ -3,12 +3,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getAuditLogs } from "@/lib/api";
 import AppShell from "../components/AppShell";
+import PageLoader from "../components/PageLoader";
 
 export default function ActivityPage() {
   const router = useRouter();
   const [logs, setLogs] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [visible, setVisible] = useState(20);
 
   useEffect(() => {
     if (!getToken()) { router.push("/login"); return; }
@@ -26,17 +28,19 @@ export default function ActivityPage() {
     return map[a] || { label: a, color: "bg-white/5 text-slate-400 border-white/10" };
   }
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center text-slate-500">Loading activity...</div>;
+  if (loading) return <AppShell><PageLoader /></AppShell>;
 
   return (
     <AppShell>
-      <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
-        <h1 className="text-2xl font-bold">Activity Log</h1>
+      <div className="max-w-3xl mx-auto px-4 py-10 space-y-6 ">
+        <div className="sticky top-16 z-20 -mt-8 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-5 bg-[#0a0a0f]">
+          <h1 className="text-2xl font-bold">Activity Log</h1>
+        </div>
 
         {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg p-3">{error}</div>}
 
         <div className="bg-white/[0.03] border border-white/10 rounded-2xl divide-y divide-white/5">
-          {logs.map((log) => {
+          {logs.slice(0, visible).map((log) => {
             const info = actionInfo(log.action);
             return (
               <div key={log.id} className="p-4 flex items-center justify-between gap-4">
@@ -50,6 +54,14 @@ export default function ActivityPage() {
           })}
           {logs.length === 0 && <p className="p-6 text-slate-500 text-sm text-center">No activity yet.</p>}
         </div>
+        {visible < logs.length && (
+          <div className="text-center">
+            <button onClick={() => setVisible((v) => v + 20)}
+              className="border border-white/10 rounded-lg px-5 py-2.5 text-sm text-slate-300 hover:bg-white/5 transition">
+              Load more ({logs.length - visible} remaining)
+            </button>
+          </div>
+        )}
       </div>
     </AppShell>
   );

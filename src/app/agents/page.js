@@ -3,6 +3,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getToken, getAgents, deleteAgent } from "@/lib/api";
 import AppShell from "../components/AppShell";
+import PageLoader from "../components/PageLoader";
 
 function AgentsList() {
   const router = useRouter();
@@ -27,7 +28,7 @@ function AgentsList() {
     finally { setDeleteTarget(null); }
   }
 
-  if (loading) return <div className="max-w-4xl mx-auto px-4 py-10 text-slate-500">Loading agents...</div>;
+  if (!agent) return <AppShell><PageLoader /></AppShell>;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
@@ -103,7 +104,7 @@ function AgentsList() {
 export default function AgentsPage() {
   return (
     <AppShell>
-      <Suspense fallback={<div className="max-w-4xl mx-auto px-4 py-10 text-slate-500">Loading...</div>}>
+      <Suspense fallback={<PageLoader />}>
         <AgentsList />
       </Suspense>
     </AppShell>

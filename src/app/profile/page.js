@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getProfile, updateProfile, exportMyData, deleteMyAccount, logout } from "@/lib/api";
 import AppShell from "../components/AppShell";
+import PageLoader from "../components/PageLoader";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -89,7 +90,7 @@ export default function ProfilePage() {
     } catch (e) { setError(e.message); setDeleting(false); }
   }
 
-  if (loading) return <AppShell><div className="max-w-xl mx-auto px-4 py-10 text-slate-500">Loading...</div></AppShell>;
+  if (loading) return <AppShell><PageLoader /></AppShell>;
 
   const input = "w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none transition";
 
@@ -120,7 +121,7 @@ export default function ProfilePage() {
             <label className="block text-sm text-slate-400 mb-1.5">Email</label>
             <input className="w-full bg-white/[0.02] border border-white/5 rounded-lg px-3.5 py-2.5 text-slate-500" value={email} disabled />
           </div>
-          <button onClick={handleSave} disabled={saving}
+          <button onClick={handleSave} disabled={saving || saved}
             className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg px-5 py-2.5 font-medium hover:opacity-90 disabled:opacity-50 transition">
             {saving ? "Saving..." : "Save changes"}
           </button>

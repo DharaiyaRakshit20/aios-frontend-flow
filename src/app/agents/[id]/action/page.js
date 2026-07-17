@@ -3,6 +3,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { getToken, getAgent } from "@/lib/api";
 import AppShell from "../../../components/AppShell";
+import PageLoader from "../components/PageLoader";
 
 function ActionContent() {
   const router = useRouter();
@@ -27,7 +28,7 @@ function ActionContent() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  if (!agent) return <div className="max-w-3xl mx-auto px-4 py-10 text-slate-500">Loading...</div>;
+  if (!agent) return <PageLoader />;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
@@ -95,7 +96,7 @@ function ActionContent() {
 export default function ActionPage() {
   return (
     <AppShell>
-      <Suspense fallback={<div className="max-w-3xl mx-auto px-4 py-10 text-slate-500">Loading...</div>}>
+      <Suspense fallback={<PageLoader />}>
         <ActionContent />
       </Suspense>
     </AppShell>

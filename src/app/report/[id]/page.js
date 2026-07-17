@@ -4,6 +4,7 @@ import { useRouter, useParams } from "next/navigation";
 import { getToken, getReport, generateBlueprint, getReportBlueprints, translateReport, getProfile } from "@/lib/api";
 import AppShell from "../../components/AppShell";
 import StarRating from "../../components/StarRating";
+import PageLoader from "../../components/PageLoader";
 
 export default function ReportPage() {
   const router = useRouter();
@@ -66,7 +67,7 @@ export default function ReportPage() {
   }
 
   if (error) return <AppShell><div className="max-w-3xl mx-auto px-4 py-10 text-red-400">{error}</div></AppShell>;
-  if (!report) return <AppShell><div className="max-w-3xl mx-auto px-4 py-10 text-slate-500">Loading report...</div></AppShell>;
+  if (!report) return <AppShell><PageLoader /></AppShell>;
 
   if (report.status === "failed") {
     return (

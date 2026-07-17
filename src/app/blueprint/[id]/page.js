@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getToken, getBlueprint, getAgents, translateBlueprint, getProfile } from "@/lib/api";
 import AppShell from "../../components/AppShell";
+import PageLoader from "../../components/PageLoader";
 
 export default function BlueprintPage() {
   const router = useRouter();
@@ -44,7 +45,7 @@ export default function BlueprintPage() {
   }, [bp]);
 
   if (error) return <AppShell><div className="max-w-3xl mx-auto px-4 py-10 text-red-400">{error}</div></AppShell>;
-  if (!bp) return <AppShell><div className="max-w-3xl mx-auto px-4 py-10 text-slate-500">Loading blueprint...</div></AppShell>;
+  if (!bp) return <AppShell><PageLoader /></AppShell>;
 
   if (bp.status === "failed") {
     return (
@@ -88,13 +89,15 @@ export default function BlueprintPage() {
           ) : (
             <button
               onClick={() => {
-                const params = new URLSearchParams({
-                  name: `${bp.opportunity_area} Agent`,
-                  role: bp.opportunity_area,
-                  description: r.overview || "",
-                  instructions: `You are an AI assistant focused on "${bp.opportunity_area}" for this business. ${r.overview || ""} Help users with tasks and questions related to this specific area. Be practical and specific to the business.`,
-                });
-                router.push(`/agents/new?${params.toString()}`);
+                try {
+                  sessionStorage.setItem("qv_agent_prefill", JSON.stringify({
+                    name: `${bp.opportunity_area} Agent`,
+                    role: bp.opportunity_area,
+                    description: r.overview || "",
+                    instructions: `You are an AI assistant focused on "${bp.opportunity_area}" for this business. ${r.overview || ""} Help users with tasks and questions related to this specific area. Be practical and specific to the business.`,
+                  }));
+                } catch {}
+                router.push("/agents/new?from=blueprint");
               }}
               className="text-sm bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg px-4 py-2 font-medium hover:opacity-90 transition"
             >

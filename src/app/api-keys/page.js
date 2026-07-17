@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getApiKeys, createApiKey, revokeApiKey } from "@/lib/api";
 import AppShell from "../components/AppShell";
+import PageLoader from "../components/PageLoader";
 
 export default function ApiKeysPage() {
   const router = useRouter();
@@ -52,7 +53,7 @@ export default function ApiKeysPage() {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-  if (loading) return <AppShell><div className="max-w-3xl mx-auto px-4 py-10 text-slate-500">Loading...</div></AppShell>;
+  if (loading) return <AppShell><PageLoader /></AppShell>;
 
   return (
     <AppShell>

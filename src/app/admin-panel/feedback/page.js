@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getAdminFeedback } from "@/lib/api";
 import AdminShell from "../../components/AdminShell";
+import PageLoader from "../components/PageLoader";
 
 export default function AdminFeedback() {
   const router = useRouter();
@@ -15,7 +16,7 @@ export default function AdminFeedback() {
   }, [router]);
 
   if (error) return <AdminShell><div className="max-w-4xl mx-auto px-4 py-10 text-red-400">{error}</div></AdminShell>;
-  if (!data) return <AdminShell><div className="max-w-4xl mx-auto px-4 py-10 text-slate-500">Loading...</div></AdminShell>;
+  if (!data) return <AdminShell><PageLoader /></AdminShell>;
 
   const cards = [
     { label: "Avg Rating", value: data.avg_rating != null ? `${data.avg_rating} ★` : "—" },

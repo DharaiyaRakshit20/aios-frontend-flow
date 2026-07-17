@@ -63,3 +63,28 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;                /* Chrome/Safari/Brave */
 }
+
+/* scrollbar chhupao (scroll chalta rahega) */
+.no-scrollbar {
+  -ms-overflow-style: none;      /* IE/Edge */
+  scrollbar-width: none;         /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;                 /* Chrome/Safari/Brave */
+}
+
+body::-webkit-scrollbar { display: none; }
+body { -ms-overflow-style: none; scrollbar-width: none; }
+
+html, body {
+  background-color: #0a0a0f;
+}
+
+/* main page ka scrollbar chhupao */
+html {
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge */
+}
+html::-webkit-scrollbar {
+  display: none;                /* Chrome/Brave/Safari */
+}

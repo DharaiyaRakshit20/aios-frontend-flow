@@ -5,6 +5,7 @@ import { runScan, getProfile, getOrganization, getLastScanIntake, saveDraft, get
 import AppShell from "../components/AppShell";
 import Dropdown from "../components/Dropdown";
 import MultiSelect from "../components/MultiSelect";
+import PageLoader from "../components/PageLoader";
 
 const STEPS = ["Basics", "Operations", "Data & Tech", "Goals", "Customers"];
 
@@ -43,26 +44,28 @@ function ScanForm() {
 
   const draftKey = `qevora_scan_draft_${orgId || "new"}`;
   const draftLoaded = useRef(false);
+  const userTouched = useRef(false);
 
   // --- prefill: profile + org + last scan ---
   useEffect(() => {
     getProfile()
       .then((u) => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setForm((f) => ({ ...f, company_size: u.company_size || f.company_size }));
-      })
+          if (userTouched.current) return;
+          setForm((f) => ({ ...f, company_size: u.company_size || f.company_size }));
+        })
       .catch(() => {});
 
     if (orgId) {
       getOrganization(orgId)
         .then((org) => {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
+          if (userTouched.current) return;
           setForm((f) => ({ ...f, industry: org.industry || f.industry }));
         })
         .catch(() => {});
 
       getLastScanIntake(orgId)
         .then((res) => {
+          if (userTouched.current) return;
           if (res.intake) {
             const multiFields = ["current_tools", "departments", "repetitive_tasks",
               "existing_automation", "pain_points", "goals", "customer_channels"];
@@ -88,6 +91,7 @@ function ScanForm() {
   useEffect(() => {
     getDraft(orgId)
       .then((res) => {
+        if (userTouched.current) return;
         if (res.draft && res.draft.form) {
           // eslint-disable-next-line react-hooks/set-state-in-effect
           setForm((f) => {
@@ -123,7 +127,10 @@ function ScanForm() {
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form, step]);
-  function set(key, val) { setForm((f) => ({ ...f, [key]: val })); }
+  function set(key, val) {
+    userTouched.current = true;   // user ne edit kiya -> ab prefill overwrite na kare
+    setForm((f) => ({ ...f, [key]: val }));
+  }
 
   // --- mandatory fields ---
   const requiredByStep = [
@@ -205,11 +212,11 @@ function ScanForm() {
       <Field label="Location" k="location" placeholder="e.g. Mumbai, India" {...p} />
     </div>,
     <div key="s1" className="space-y-4">
-      <MultiSelect label="Current tools & software *" values={form.current_tools} onChange={(v) => set("current_tools", v)}
+      <MultiSelect label="Current tools & software " required values={form.current_tools} onChange={(v) => set("current_tools", v)}
         options={["Excel / Google Sheets", "WhatsApp", "Tally", "CRM", "ERP", "Email", "Accounting software", "POS system", "Pen & paper"]} />
       <MultiSelect label="Departments" values={form.departments} onChange={(v) => set("departments", v)}
         options={["Sales", "Customer Support", "Operations", "Accounts / Finance", "Marketing", "HR", "Inventory / Warehouse", "Production"]} />
-      <MultiSelect label="Repetitive / manual tasks *" values={form.repetitive_tasks} onChange={(v) => set("repetitive_tasks", v)}
+      <MultiSelect label="Repetitive / manual tasks " required values={form.repetitive_tasks} onChange={(v) => set("repetitive_tasks", v)}
         options={["Order entry", "Customer replies", "Report generation", "Data entry", "Invoicing", "Follow-ups", "Scheduling", "Inventory updates"]} />
       <Field label="Which areas take the most time?" k="time_consuming_areas" placeholder="e.g. customer support and manual reporting" {...p} />
     </div>,
@@ -221,10 +228,10 @@ function ScanForm() {
       <Dropdown label="Do you have a website / app?" value={form.has_website_app} onChange={(v) => set("has_website_app", v)} options={["No", "Website only", "App only", "Both website and app"]} />
     </div>,
     <div key="s3" className="space-y-4">
-      <MultiSelect label="Main pain points *" values={form.pain_points} onChange={(v) => set("pain_points", v)}
+      <MultiSelect label="Main pain points " required values={form.pain_points} onChange={(v) => set("pain_points", v)}
         options={["Slow customer support", "Too much manual work", "High operational costs", "Data scattered everywhere", "Errors in data entry", "Losing customers", "Can't scale"]} />
       <Field label="Biggest bottleneck" k="biggest_bottleneck" placeholder="e.g. too much time on manual order processing" {...p} />
-      <MultiSelect label="Goals *" values={form.goals} onChange={(v) => set("goals", v)}
+      <MultiSelect label="Goals " required values={form.goals} onChange={(v) => set("goals", v)}
         options={["Save time", "Grow sales", "Reduce costs", "Improve customer experience", "Better data & insights", "Automate operations", "Scale the business"]} />
       <Dropdown label="Budget for AI" value={form.ai_budget} onChange={(v) => set("ai_budget", v)} options={["Not sure yet", "Under ₹40k/mo", "₹40k-1.5L/mo", "₹1.5L-8L/mo", "₹8L+/mo"]} allowOther />
       <Dropdown label="Timeline to adopt AI" value={form.timeline} onChange={(v) => set("timeline", v)} options={["ASAP", "1-3 months", "3-6 months", "6-12 months", "Just exploring"]} />
@@ -331,7 +338,7 @@ function ScanForm() {
 
 export default function ScanWizard() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center text-slate-500">Loading...</div>}>
+    <Suspense fallback={<PageLoader />}>
       <ScanForm />
     </Suspense>
   );

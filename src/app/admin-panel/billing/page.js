@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getAdminRevenue } from "@/lib/api";
 import AdminShell from "../../components/AdminShell";
+import PageLoader from "../components/PageLoader";
 
 export default function AdminBilling() {
   const router = useRouter();
@@ -15,7 +16,7 @@ export default function AdminBilling() {
     getAdminRevenue().then(setData).catch((e) => setError(e.message)).finally(() => setLoading(false));
   }, [router]);
 
-  if (loading) return <AdminShell><div className="max-w-6xl mx-auto px-6 py-10 text-slate-500">Loading...</div></AdminShell>;
+  if (loading) return <AdminShell><PageLoader /></AdminShell>;
   if (error) return <AdminShell><div className="max-w-6xl mx-auto px-6 py-10 text-red-400">{error}</div></AdminShell>;
 
   return (

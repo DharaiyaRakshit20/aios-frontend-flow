@@ -1,57 +1,77 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 
-export default function MultiSelect({ label, values, onChange, options, placeholder = "Select..." }) {
+export default function MultiSelect({ label, values, onChange, options, placeholder = "Select...", required = false }) {
   const [open, setOpen] = useState(false);
   const [otherText, setOtherText] = useState("");
   const ref = useRef(null);
 
-  useEffect(() => {
-    function handleClick(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  // values ko hamesha array banao (safety — string aaye to bhi na toote)
+  // values ko hamesha array banao (safety)
   const selected = Array.isArray(values)
     ? values
     : (typeof values === "string" && values.trim())
       ? values.split(",").map((x) => x.trim()).filter(Boolean)
       : [];
 
-  function toggle(opt) {
-    if (selected.includes(opt)) {
-      onChange(selected.filter((x) => x !== opt));
-    } else {
-      onChange([...selected, opt]);
+  // H4/H11 fix: latest list ref me rakho — fast clicks pe stale list use na ho
+  const latest = useRef(selected);
+  useEffect(() => { latest.current = selected; });
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     }
+    function handleKey(e) {
+      if (e.key === "Escape") setOpen(false);   // M2
+    }
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, []);
+
+  function toggle(opt) {
+    const cur = latest.current;                  // props nahi, latest ref
+    const next = cur.includes(opt) ? cur.filter((x) => x !== opt) : [...cur, opt];
+    latest.current = next;                       // turant update -> agla click sahi list dekhega
+    onChange(next);
   }
 
   function addOther() {
     const t = otherText.trim();
-    if (t && !selected.includes(t)) {
-      onChange([...selected, t]);
-      setOtherText("");
-    }
+    if (!t) return;
+    const cur = latest.current;
+    if (cur.includes(t)) { setOtherText(""); return; }
+    const next = [...cur, t];
+    latest.current = next;
+    onChange(next);
+    setOtherText("");
   }
 
   function removeChip(val) {
-    onChange(selected.filter((x) => x !== val));
+    const next = latest.current.filter((x) => x !== val);
+    latest.current = next;
+    onChange(next);
   }
 
   return (
     <div ref={ref} className="relative">
-      {label && <label className="block text-sm text-slate-400 mb-1.5">{label}</label>}
+      {label && (
+        <label className="block text-sm text-slate-400 mb-1.5">
+          {label}{required && <span className="text-indigo-400"> *</span>}
+        </label>
+      )}
 
-      {/* selected chips */}
       {selected.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-2">
           {selected.map((v) => (
             <span key={v} className="inline-flex items-center gap-1 text-xs bg-indigo-500/15 text-indigo-300 border border-indigo-500/20 rounded-full px-2.5 py-1">
               {v}
-              <button type="button" onMouseDown={(e) => { e.preventDefault(); removeChip(v); }} className="hover:text-white">✕</button>
+              <button type="button" aria-label={`Remove ${v}`}
+                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); removeChip(v); }}
+                className="hover:text-white">✕</button>
             </span>
           ))}
         </div>
@@ -59,6 +79,9 @@ export default function MultiSelect({ label, values, onChange, options, placehol
 
       <button
         type="button"
+        role="combobox"
+        aria-expanded={open}
+        aria-haspopup="listbox"
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-left focus:border-indigo-500 focus:outline-none transition hover:bg-white/[0.07]"
       >
@@ -71,17 +94,22 @@ export default function MultiSelect({ label, values, onChange, options, placehol
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 w-full bg-[#12121a] border border-white/10 rounded-lg overflow-hidden shadow-xl shadow-black/50 max-h-72 overflow-y-auto">
+        <div role="listbox" aria-multiselectable="true"
+          className="absolute z-[60] mt-1 w-full bg-[#12121a] border border-white/10 rounded-lg overflow-hidden shadow-xl shadow-black/50 max-h-72 overflow-y-auto no-scrollbar">
+          <p className="text-[11px] text-slate-600 px-3.5 pt-2.5">Pick as many as you like — the menu stays open.</p>
           {options.map((o) => {
             const checked = selected.includes(o);
             return (
               <button
                 key={o}
                 type="button"
-                onMouseDown={(e) => { e.preventDefault(); toggle(o); }}
+                role="option"
+                aria-selected={checked}
+                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); toggle(o); }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(o); } }}
                 className={`w-full flex items-center gap-2 text-left px-3.5 py-2.5 text-sm transition ${checked ? "bg-indigo-500/10 text-indigo-300" : "text-slate-300 hover:bg-white/5"}`}
               >
-                <span className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] ${checked ? "bg-indigo-500 border-indigo-500 text-white" : "border-white/20"}`}>
+                <span className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] shrink-0 ${checked ? "bg-indigo-500 border-indigo-500 text-white" : "border-white/20"}`}>
                   {checked ? "✓" : ""}
                 </span>
                 {o}
@@ -89,18 +117,17 @@ export default function MultiSelect({ label, values, onChange, options, placehol
             );
           })}
 
-          {/* Other input */}
-          <div className="border-t border-white/5 p-2 flex gap-2">
+          <div className="border-t border-white/5 p-2 flex gap-2" onMouseDown={(e) => e.stopPropagation()}>
             <input
               className="flex-1 bg-white/5 border border-white/10 rounded-md px-2.5 py-1.5 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
               placeholder="Other (type & add)"
               value={otherText}
               onChange={(e) => setOtherText(e.target.value)}
-              onMouseDown={(e) => e.stopPropagation()}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addOther(); } }}
             />
             <button type="button" onMouseDown={(e) => { e.preventDefault(); addOther(); }}
-              className="text-xs bg-indigo-500/20 text-indigo-300 rounded-md px-3 hover:bg-indigo-500/30 transition">
+              disabled={!otherText.trim()}
+              className="text-xs bg-indigo-500/20 text-indigo-300 rounded-md px-3 hover:bg-indigo-500/30 disabled:opacity-40 transition">
               Add
             </button>
           </div>

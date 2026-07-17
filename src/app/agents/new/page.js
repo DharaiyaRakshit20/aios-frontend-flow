@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getToken, getOrganizations, createAgent } from "@/lib/api";
 import AppShell from "../../components/AppShell";
 import Dropdown from "../../components/Dropdown";
+import PageLoader from "../../components/PageLoader";
 
 function NewAgentForm() {
   const router = useRouter();
@@ -22,6 +23,19 @@ function NewAgentForm() {
 
   useEffect(() => {
     if (!getToken()) { router.push("/login"); return; }
+
+    // blueprint se prefill (URL me nahi -> instructions leak nahi hoti)
+    if (params.get("from") === "blueprint") {
+      try {
+        const raw = sessionStorage.getItem("qv_agent_prefill");
+        if (raw) {
+          const p = JSON.parse(raw);
+          setForm((f) => ({ ...f, ...p }));
+          sessionStorage.removeItem("qv_agent_prefill");
+        }
+      } catch {}
+    }
+
     getOrganizations().then((d) => {
       setOrgs(d);
       if (!form.organization && d.length) setForm((f) => ({ ...f, organization: String(d[0].id) }));
@@ -67,15 +81,15 @@ function NewAgentForm() {
           options={orgs.map((o) => o.name)}
         />
         <div>
-          <label className="block text-sm text-slate-400 mb-1.5">Agent name</label>
+          <label className="block text-sm text-slate-400 mb-1.5">Agent name <span className="text-indigo-400">*</span></label>
           <input className={input} placeholder="e.g. Support Assistant" value={form.name} onChange={(e) => set("name", e.target.value)} />
         </div>
         <div>
-          <label className="block text-sm text-slate-400 mb-1.5">Role</label>
+         <label className="block text-sm text-slate-400 mb-1.5">Role <span className="text-indigo-400">*</span></label>
           <input className={input} placeholder="e.g. Customer Support Agent" value={form.role} onChange={(e) => set("role", e.target.value)} />
         </div>
         <div>
-          <label className="block text-sm text-slate-400 mb-1.5">Description <span className="text-slate-600">(optional)</span></label>
+          <label className="block text-sm text-slate-400 mb-1.5">Instructions <span className="text-indigo-400">*</span></label>
           <input className={input} placeholder="What does this agent do?" value={form.description} onChange={(e) => set("description", e.target.value)} />
         </div>
         <div>
@@ -86,7 +100,8 @@ function NewAgentForm() {
           <label className="block text-sm text-slate-400 mb-1.5">Business knowledge <span className="text-slate-600">(optional)</span></label>
           <textarea className={`${input} min-h-[100px] resize-none`} placeholder="Any info the agent should know: products, prices, policies, hours..." value={form.knowledge} onChange={(e) => set("knowledge", e.target.value)} />
         </div>
-        <button onClick={handleSave} disabled={saving} className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg px-5 py-2.5 font-medium hover:opacity-90 disabled:opacity-50 transition">
+        <button onClick={handleSave} disabled={saving || !form.name.trim() || !form.role.trim() || !form.instructions.trim()}
+          className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg px-5 py-2.5 font-medium hover:opacity-90 disabled:opacity-40 transition">
           {saving ? "Creating..." : "Create Agent"}
         </button>
       </div>
@@ -97,7 +112,7 @@ function NewAgentForm() {
 export default function NewAgentPage() {
   return (
     <AppShell>
-      <Suspense fallback={<div className="max-w-2xl mx-auto px-4 py-10 text-slate-500">Loading...</div>}>
+      <Suspense fallback={<PageLoader />}>
         <NewAgentForm />
       </Suspense>
     </AppShell>
