@@ -3,7 +3,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { getToken, getAgent } from "@/lib/api";
 import AppShell from "../../../components/AppShell";
-import PageLoader from "../components/PageLoader";
+import PageLoader from "../../../components/PageLoader";
 
 function ActionContent() {
   const router = useRouter();

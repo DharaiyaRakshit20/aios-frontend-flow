@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getPlatformUsers, setUserActive } from "@/lib/api";
 import AdminShell from "../../components/AdminShell";
-import PageLoader from "../components/PageLoader";
+import PageLoader from "../../components/PageLoader";
 
 export default function AdminUsers() {
   const router = useRouter();

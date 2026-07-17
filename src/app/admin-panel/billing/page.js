@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getAdminRevenue } from "@/lib/api";
 import AdminShell from "../../components/AdminShell";
-import PageLoader from "../components/PageLoader";
+import PageLoader from "../../components/PageLoader";
 
 export default function AdminBilling() {
   const router = useRouter();

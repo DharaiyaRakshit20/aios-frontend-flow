@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import PageLoader from "../components/PageLoader";
+import PageLoader from "../../components/PageLoader";
 
 export default function HostedChat() {
   const { slug } = useParams();
