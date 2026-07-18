@@ -28,7 +28,7 @@ function AgentsList() {
     finally { setDeleteTarget(null); }
   }
 
-  if (!agent) return <AppShell><PageLoader /></AppShell>;
+  if (loading) return <PageLoader />;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
