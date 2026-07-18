@@ -399,3 +399,11 @@ export async function verifyEmail(token) {
 export async function resendVerification() {
   return apiFetch("/api/auth/verify-email/resend", { method: "POST" });
 }
+
+// --- report sharing ---
+export async function toggleReportShare(reportId) {
+  return apiFetch(`/api/scanner/reports/${reportId}/share`, { method: "POST" });
+}
+export async function getPublicReport(token) {
+  return apiFetch(`/api/scanner/public/report/${token}`);
+}
