@@ -140,7 +140,7 @@ function NewAgentForm() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10 space-y-6">
-      <button onClick={() => router.push("/agents")} className="text-sm text-slate-400 hover:text-white transition">← Back to agents</button>
+      {/* <button onClick={() => router.push("/agents")} className="text-sm text-slate-400 hover:text-white transition">← Back to agents</button> */}
       <h1 className="text-2xl font-bold">New AI Agent</h1>
 
       {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg p-3">{error}</div>}

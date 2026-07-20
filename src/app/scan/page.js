@@ -9,17 +9,22 @@ import PageLoader from "../components/PageLoader";
 
 const STEPS = ["Basics", "Operations", "Data & Tech", "Goals", "Customers"];
 
-function Field({ label, k, placeholder, hint, form, set }) {
+function Field({ label, k, placeholder, hint, form, set, type = "text", maxLength }) {
   return (
     <div>
       <label className="block text-sm text-slate-400 mb-1.5">{label}</label>
       <input
+        type={type}
+        maxLength={maxLength}
         className="w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none transition"
         placeholder={placeholder}
         value={form[k]}
         onChange={(e) => set(k, e.target.value)}
       />
       {hint && <p className="text-xs text-slate-600 mt-1">{hint}</p>}
+      {maxLength && form[k]?.length >= maxLength && (
+        <p className="text-xs text-amber-500 mt-1">Maximum {maxLength} characters.</p>
+      )}
     </div>
   );
 }
@@ -153,6 +158,11 @@ function ScanForm() {
     setStep((s) => s + 1);
   }
 
+  // step badle -> upar scroll (Next button neeche ho to bhi dikhe - B53)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
   async function handleSubmit() {
     setError("");
     for (let s = 0; s < requiredByStep.length; s++) {
@@ -177,7 +187,7 @@ function ScanForm() {
       router.push(`/report/${report.id}`);
     } catch (e) {
       if (e.message.toLowerCase().includes("limit")) {
-        router.push("/pricing");
+        router.push("/pricing?reason=limit");
       } else {
         setError(e.message);
       }
@@ -218,7 +228,7 @@ function ScanForm() {
         options={["Sales", "Customer Support", "Operations", "Accounts / Finance", "Marketing", "HR", "Inventory / Warehouse", "Production"]} />
       <MultiSelect label="Repetitive / manual tasks " required values={form.repetitive_tasks} onChange={(v) => set("repetitive_tasks", v)}
         options={["Order entry", "Customer replies", "Report generation", "Data entry", "Invoicing", "Follow-ups", "Scheduling", "Inventory updates"]} />
-      <Field label="Which areas take the most time?" k="time_consuming_areas" placeholder="e.g. customer support and manual reporting" {...p} />
+      <Field label="Which areas take the most time?" k="time_consuming_areas" placeholder="e.g. customer support and manual reporting" maxLength={500} {...p} />
     </div>,
     <div key="s2" className="space-y-4">
       <Dropdown label="Where is your data stored? *" value={form.data_storage} onChange={(v) => set("data_storage", v)} options={["Mostly paper", "Excel/Sheets", "Basic software", "CRM/ERP system", "Cloud + integrated systems"]} />
@@ -230,7 +240,7 @@ function ScanForm() {
     <div key="s3" className="space-y-4">
       <MultiSelect label="Main pain points " required values={form.pain_points} onChange={(v) => set("pain_points", v)}
         options={["Slow customer support", "Too much manual work", "High operational costs", "Data scattered everywhere", "Errors in data entry", "Losing customers", "Can't scale"]} />
-      <Field label="Biggest bottleneck" k="biggest_bottleneck" placeholder="e.g. too much time on manual order processing" {...p} />
+      <Field label="Biggest bottleneck" k="biggest_bottleneck" placeholder="e.g. too much time on manual order processing" maxLength={500} {...p} />
       <MultiSelect label="Goals " required values={form.goals} onChange={(v) => set("goals", v)}
         options={["Save time", "Grow sales", "Reduce costs", "Improve customer experience", "Better data & insights", "Automate operations", "Scale the business"]} />
       <Dropdown label="Budget for AI" value={form.ai_budget} onChange={(v) => set("ai_budget", v)} options={["Not sure yet", "Under ₹40k/mo", "₹40k-1.5L/mo", "₹1.5L-8L/mo", "₹8L+/mo"]} allowOther />
@@ -239,8 +249,8 @@ function ScanForm() {
     <div key="s4" className="space-y-4">
       <MultiSelect label="Customer interaction channels" values={form.customer_channels} onChange={(v) => set("customer_channels", v)}
         options={["Phone calls", "WhatsApp", "Email", "Walk-in", "Website", "Social media", "Mobile app"]} />
-      <Field label="Monthly customers (approx)" k="monthly_customers" placeholder="e.g. 500" {...p} />
-      <Field label="Monthly orders / transactions (approx)" k="monthly_orders" placeholder="e.g. 1200" {...p} />
+      <Field label="Monthly customers (approx)" k="monthly_customers" placeholder="e.g. 500" type="number" maxLength={9} {...p} />
+      <Field label="Monthly orders / transactions (approx)" k="monthly_orders" placeholder="e.g. 1200" type="number" maxLength={9} {...p} />
     </div>,
   ];
 
@@ -281,7 +291,7 @@ function ScanForm() {
 
           <p className="text-xs text-slate-600 mb-4">Fields marked with * are required.</p>
 
-          {steps[step]}
+          <div key={step}>{steps[step]}</div>
 
           <div className="flex justify-between items-center mt-8">
             <button onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}

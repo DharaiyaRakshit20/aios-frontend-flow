@@ -21,6 +21,7 @@ export default function OrgSettings() {
   const [error, setError] = useState("");
   const [memberMsg, setMemberMsg] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   function loadMembers() {
     getOrgMembers(id).then(setMembers).catch(() => {});
@@ -40,8 +41,12 @@ export default function OrgSettings() {
   const isAdmin = role === "admin";
 
   async function handleSave() {
-    setSaving(true); setError("");
-    try { await updateOrganization(id, name, industry); router.push("/dashboard"); }
+    setSaving(true); setError(""); setSaved(false);
+    try {
+      await updateOrganization(id, name, industry);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    }
     catch (e) { setError(e.message); } finally { setSaving(false); }
   }
   async function handleDelete() {
@@ -52,6 +57,10 @@ export default function OrgSettings() {
   async function handleAddMember() {
     setMemberMsg("");
     if (!newEmail.trim()) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail.trim())) {
+      setMemberMsg("Please enter a valid email address.");
+      return;
+    }
     try {
       await addOrgMember(id, newEmail.trim().toLowerCase(), "member");
       setNewEmail("");
@@ -92,6 +101,7 @@ export default function OrgSettings() {
             <input className="w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-white focus:border-indigo-500 focus:outline-none transition disabled:opacity-50"
               value={industry} onChange={(e) => setIndustry(e.target.value)} disabled={!isAdmin} />
           </div>
+          {saved && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm rounded-lg p-3">Changes saved ✓</div>}
           {isAdmin && (
             <button onClick={handleSave} disabled={saving}
               className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg px-5 py-2.5 font-medium hover:opacity-90 disabled:opacity-50 transition">

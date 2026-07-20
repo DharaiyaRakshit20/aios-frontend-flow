@@ -22,7 +22,7 @@ export default function AdminBilling() {
   return (
     <AdminShell>
       <div className="max-w-6xl mx-auto px-6 py-10 space-y-8">
-        <button onClick={() => router.push("/admin-panel")} className="text-sm text-slate-400 hover:text-white transition">← Back to overview</button>
+        {/* <button onClick={() => router.push("/admin-panel")} className="text-sm text-slate-400 hover:text-white transition">← Back to overview</button> */}
         <h1 className="text-2xl font-bold">Billing & Revenue</h1>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

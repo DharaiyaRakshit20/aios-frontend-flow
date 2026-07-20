@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getToken, getPlans, getMySubscription, subscribe, createOrder, verifyPayment } from "@/lib/api";
 import AppShell from "../components/AppShell";
 import PageLoader from "../components/PageLoader";
@@ -13,8 +13,10 @@ const FALLBACK_PLANS = [
   { key: "business", name: "Business", price: 7999, scan_limit: 1000, agent_limit: 100 },
 ];
 
-export default function PricingPage() {
+function PricingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const limitReason = searchParams.get("reason") === "limit";
   const [plans, setPlans] = useState([]);
   const [current, setCurrent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,6 +24,7 @@ export default function PricingPage() {
   const [error, setError] = useState("");
   const [successPlan, setSuccessPlan] = useState(null);
   const [loggedIn, setLoggedIn] = useState(null);
+  
 
   useEffect(() => {
     const isIn = !!getToken();
@@ -113,6 +116,17 @@ export default function PricingPage() {
 
   const content = (
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-8">
+      {limitReason && (
+        <div className="bg-amber-500/[0.08] border border-amber-500/25 rounded-xl px-4 py-3 flex items-start gap-3 max-w-2xl mx-auto">
+          <svg className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <p className="text-sm font-medium text-amber-200">You&apos;ve reached your plan&apos;s limit</p>
+            <p className="text-xs text-slate-400 mt-0.5">Upgrade to a higher plan to run more scans and create more agents.</p>
+          </div>
+        </div>
+      )}
       <div className="text-center">
         <h1 className="text-3xl font-bold">Choose your plan</h1>
         <p className="text-slate-400 mt-2">
@@ -213,5 +227,13 @@ export default function PricingPage() {
         </div>
       )}
     </>
+  );
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0f]" />}>
+      <PricingContent />
+    </Suspense>
   );
 }

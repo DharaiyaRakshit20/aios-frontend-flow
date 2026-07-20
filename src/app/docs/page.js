@@ -23,6 +23,35 @@ export default function DocsPage() {
     { id: "intro", label: "Introduction" },
     { id: "auth", label: "Authentication" },
     {
+      id: "org", label: "Create Organization",
+      method: "POST", path: "/api/organizations/",
+      desc: "Create an organization (business). You'll use its ID to run scans and create agents.",
+      snippets: {
+        curl: `curl ${apiUrl}/api/organizations/ \\
+  -H "Authorization: Api-Key qev_your_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{"name": "My Shop", "industry": "retail"}'`,
+        javascript: `const res = await fetch("${apiUrl}/api/organizations/", {
+  method: "POST",
+  headers: {
+    "Authorization": "Api-Key qev_your_key",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ name: "My Shop", industry: "retail" }),
+});
+const org = await res.json();
+// org.id ko scan / agent me use karo`,
+        python: `import requests
+res = requests.post(
+    "${apiUrl}/api/organizations/",
+    headers={"Authorization": "Api-Key qev_your_key"},
+    json={"name": "My Shop", "industry": "retail"},
+)
+org = res.json()
+# org["id"] ko scan / agent me use karo`,
+      },
+    },
+    {
       id: "scan", label: "Run a Scan",
       method: "POST", path: "/api/scanner/scan",
       desc: "Analyze a business and get an AI readiness report.",
@@ -115,6 +144,7 @@ def ask_agent(message, history=None):
   const current = endpoints.find((e) => e.id === section);
 
   function defaultBody(id) {
+    if (id === "org") return JSON.stringify({ name: "My Shop", industry: "retail" }, null, 2);
     if (id === "scan") return JSON.stringify({ organization: 1, intake: { industry: "retail", team_size: "20" } }, null, 2);
     if (id === "agent") return JSON.stringify({ agent_id: 1, message: "Hello, what are your hours?", history: [] }, null, 2);
     return "";
@@ -325,6 +355,13 @@ def ask_agent(message, history=None):
 
                       <div className="bg-white/[0.02] border border-white/5 rounded-lg p-3 mt-2 text-xs text-slate-400 space-y-1.5">
                         <p className="text-white font-medium">What to put here</p>
+                        {current.id === "org" && (
+                          <>
+                            <p><code className="text-indigo-300">name</code> — your business name (required).</p>
+                            <p><code className="text-indigo-300">industry</code> — e.g. retail, healthcare (optional).</p>
+                            <p className="text-slate-500">The response includes an <code className="text-indigo-300">id</code> — copy it and use it as <code className="text-indigo-300">organization</code> when you run a scan.</p>
+                          </>
+                        )}
                         {current.id === "scan" && (
                           <>
                             <p><code className="text-indigo-300">organization</code> — your org ID. Open <button onClick={() => router.push("/organizations")} className="text-indigo-400 hover:text-indigo-300">Organizations</button> → Settings; the number in the URL (<code className="text-indigo-300">/org/3</code>) is the ID.</p>

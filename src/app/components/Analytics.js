@@ -7,7 +7,8 @@ export default function Analytics() {
 
   useEffect(() => {
     try {
-      setAllowed(localStorage.getItem("qv_consent") === "all");
+      const c = localStorage.getItem("qv_consent") || "";
+      setAllowed(c === "all" || c.includes("analytics"));
     } catch {}
   }, []);
 

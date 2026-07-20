@@ -146,12 +146,11 @@ def ask_agent(message, history=None):
         {/* header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.push("/agents")} className="text-slate-400 hover:text-white transition">←</button>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center font-bold">
               {agent.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="font-medium">{agent.name}</p>
+              <h1 className="font-medium">{agent.name}</h1>
               <p className="text-xs text-slate-500">{agent.role}</p>
             </div>
           </div>
@@ -169,9 +168,9 @@ def ask_agent(message, history=None):
         </div>
 
         {/* tabs */}
-        <div className="flex gap-1 mb-4 bg-white/[0.03] border border-white/10 rounded-lg p-1 w-fit">
+        <div role="tablist" className="flex gap-1 mb-4 bg-white/[0.03] border border-white/10 rounded-lg p-1 w-fit">
           {[["chat", "Test Chat"], ["embed", "Add to Website"], ["api", "API"]].map(([k, label]) => (
-            <button key={k} onClick={() => setTab(k)}
+            <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
               className={`px-4 py-1.5 rounded-md text-sm transition ${tab === k ? "bg-gradient-to-r from-indigo-500 to-violet-500 text-white" : "text-slate-400 hover:text-white"}`}>
               {label}
             </button>
@@ -214,7 +213,7 @@ def ask_agent(message, history=None):
             {error && <div className="text-red-400 text-sm mt-2">{error}</div>}
             <div className="flex gap-2 mt-4">
               <input className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none transition"
-                placeholder="Type a message..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") handleSend(); }} />
+                placeholder="Type a message..." maxLength={2000} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") handleSend(); }} />
               <button onClick={handleSend} disabled={sending || !input.trim()} className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-xl px-5 font-medium hover:opacity-90 disabled:opacity-40 transition">Send</button>
             </div>
           </div>

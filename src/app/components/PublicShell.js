@@ -40,6 +40,8 @@ export default function PublicShell({ children }) {
               <div className="space-y-2 text-sm text-slate-400">
                 <button onClick={() => router.push("/privacy")} className="block hover:text-white transition">Privacy</button>
                 <button onClick={() => router.push("/terms")} className="block hover:text-white transition">Terms</button>
+                <button onClick={() => router.push("/cookie-policy")} className="block hover:text-white transition">Cookie Policy</button>
+                <button onClick={() => window.dispatchEvent(new Event("qv-open-consent"))} className="block hover:text-white transition">Cookie preferences</button>
               </div>
             </div>
           </div>

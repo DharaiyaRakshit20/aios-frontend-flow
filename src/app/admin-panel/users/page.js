@@ -31,7 +31,7 @@ export default function AdminUsers() {
   return (
     <AdminShell>
       <div className="max-w-6xl mx-auto px-6 py-10 space-y-6">
-        <button onClick={() => router.push("/admin-panel")} className="text-sm text-slate-400 hover:text-white transition">← Back to overview</button>
+        {/* <button onClick={() => router.push("/admin-panel")} className="text-sm text-slate-400 hover:text-white transition">← Back to overview</button> */}
         <h1 className="text-2xl font-bold">Users</h1>
 
         {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg p-3">{error}</div>}

@@ -105,6 +105,7 @@ export default function MultiSelect({ label, values, onChange, options, placehol
                 type="button"
                 role="option"
                 aria-selected={checked}
+                aria-checked={checked}
                 onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); toggle(o); }}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(o); } }}
                 className={`w-full flex items-center gap-2 text-left px-3.5 py-2.5 text-sm transition ${checked ? "bg-indigo-500/10 text-indigo-300" : "text-slate-300 hover:bg-white/5"}`}

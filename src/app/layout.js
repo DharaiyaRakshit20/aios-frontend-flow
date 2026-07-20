@@ -1,9 +1,10 @@
-import { Inter } from "next/font/google";
+import { Inter, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 import Analytics from "./components/Analytics";
 import CookieConsent from "./components/CookieConsent";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const devanagari = Noto_Sans_Devanagari({ subsets: ["devanagari"], variable: "--font-deva" });
 
 export const metadata = {
   title: "Qevora — AI Readiness for Your Business",
@@ -13,7 +14,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${inter.variable} ${devanagari.variable} antialiased`} style={{ fontFamily: "var(--font-inter), var(--font-deva), sans-serif" }}>
         {children}
         <Analytics />
         <CookieConsent />

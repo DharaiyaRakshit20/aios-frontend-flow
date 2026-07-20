@@ -14,6 +14,7 @@ export default function ApiKeysPage() {
   const [creating, setCreating] = useState(false);
   const [newKey, setNewKey] = useState(null); // freshly created raw key (ek baar dikhta)
   const [copied, setCopied] = useState(false);
+  const [revokeTarget, setRevokeTarget] = useState(null);
 
   function load() {
     getApiKeys().then((d) => setKeys(d.results || d)).catch((e) => setError(e.message)).finally(() => setLoading(false));
@@ -40,9 +41,12 @@ export default function ApiKeysPage() {
     finally { setCreating(false); }
   }
 
-  async function handleRevoke(id) {
+  async function handleRevoke() {
+    const id = revokeTarget?.id;
+    if (!id) return;
     try { await revokeApiKey(id); setKeys((k) => k.filter((x) => x.id !== id)); }
     catch (e) { setError(e.message); }
+    finally { setRevokeTarget(null); }
   }
 
   function copyKey() {
@@ -83,8 +87,10 @@ export default function ApiKeysPage() {
         <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5">
           <p className="text-sm font-medium mb-1">Create a new key</p>
           <p className="text-xs text-slate-500 mb-3">Give it a name so you can recognise it later.</p>
+          <label htmlFor="key-name" className="sr-only">Key name</label>
           <div className="flex flex-col sm:flex-row gap-2">
             <input
+              id="key-name"
               className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none transition"
               placeholder="Key name (e.g. My integration)"
               value={newName}
@@ -120,7 +126,7 @@ export default function ApiKeysPage() {
                   <code>{k.prefix}••••••</code> · {k.last_used ? `Last used ${new Date(k.last_used).toLocaleDateString()}` : "Never used"}
                 </p>
               </div>
-              <button onClick={() => handleRevoke(k.id)} className="text-slate-600 hover:text-red-400 text-sm">Revoke</button>
+              <button onClick={() => setRevokeTarget(k)} className="text-slate-600 hover:text-red-400 text-sm">Revoke</button>
             </div>
           ))}
         </div>
@@ -139,6 +145,20 @@ export default function ApiKeysPage() {
           </button>
         </div>
       </div>
+      {revokeTarget && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setRevokeTarget(null)}>
+          <div className="bg-[#12121a] border border-white/10 rounded-2xl p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-2">Revoke this key?</h3>
+            <p className="text-slate-400 text-sm mb-6">
+              <span className="text-white font-medium">{revokeTarget.name}</span> will stop working immediately. Any app using it will lose access. This cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setRevokeTarget(null)} className="text-slate-400 hover:text-white text-sm px-4 py-2 transition">Cancel</button>
+              <button onClick={handleRevoke} className="bg-red-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-red-700 transition">Revoke key</button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }

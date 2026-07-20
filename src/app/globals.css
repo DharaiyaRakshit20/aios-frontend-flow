@@ -88,3 +88,38 @@ html {
 html::-webkit-scrollbar {
   display: none;                /* Chrome/Brave/Safari */
 }
+
+/* B-39/A-10: default text color (near-black bg pe dark text na ho) */
+body {
+  color: #e2e8f0;
+}
+
+/* B-38/A-09: focus ring har interactive element pe visible */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible,
+[role="option"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* A-04: skip-to-content link */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: #6366f1;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 0 0 8px 0;
+}
+.skip-link:focus {
+  left: 0;
+}
+

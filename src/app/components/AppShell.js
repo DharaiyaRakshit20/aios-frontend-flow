@@ -15,6 +15,9 @@ const NAV = [
   { label: "Activity", path: "/activity", icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" },
 ];
 
+// yeh top-level pages hain (sidebar wale) — inpe back nahi chahiye
+const TOP_LEVEL = ["/dashboard", "/organizations", "/agents", "/inquiries", "/pricing", "/api-keys", "/docs", "/profile", "/activity"];
+
 export default function AppShell({ children }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -89,6 +92,7 @@ export default function AppShell({ children }) {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
+      <a href="#main-content" className="skip-link">Skip to content</a>
       {/* mobile overlay */}
       {sidebar && (
         <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setSidebar(false)} />
@@ -134,7 +138,7 @@ export default function AppShell({ children }) {
         {/* HEADER */}
         <header className="sticky top-0 z-30 h-16 border-b border-white/5 bg-[#0a0a0f]/80 backdrop-blur flex items-center justify-between px-4 sm:px-6">
           {/* hamburger (mobile) */}
-          <button onClick={() => setSidebar(true)} className="lg:hidden text-slate-300 hover:text-white transition">
+          <button onClick={() => setSidebar(true)} aria-label="Open menu" className="lg:hidden text-slate-300 hover:text-white transition">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -145,7 +149,7 @@ export default function AppShell({ children }) {
           <div className="flex items-center gap-4">
             {/* bell */}
             <div ref={bellRef} className="relative">
-              <button onClick={toggleBell} className="relative text-slate-400 hover:text-white transition flex">
+              <button onClick={toggleBell} aria-label={unread > 0 ? `Notifications (${unread} unread)` : "Notifications"} className="relative text-slate-400 hover:text-white transition flex">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
@@ -182,7 +186,7 @@ export default function AppShell({ children }) {
                             </div>
                           </div>
                         </button>
-                        <button onClick={(e) => handleClearOne(e, n.id)}
+                        <button onClick={(e) => handleClearOne(e, n.id)} aria-label="Dismiss notification"
                           className="absolute top-3 right-3 text-slate-600 hover:text-red-400 text-xs opacity-0 group-hover:opacity-100 transition">✕</button>
                       </div>
                     ))}
@@ -199,7 +203,16 @@ export default function AppShell({ children }) {
           </div>
         </header>
 
-        <main className="w-full px-4 sm:px-6 lg:px-10 py-8 [&>div]:max-w-none [&>div]:mx-0 [&>div]:px-0 [&>div]:py-0">
+        <main id="main-content" className="w-full px-4 sm:px-6 lg:px-10 py-8 [&>div]:max-w-none [&>div]:mx-0 [&>div]:px-0 [&>div]:py-0">
+          {!TOP_LEVEL.includes(pathname) && (
+            <button onClick={() => router.back()}
+              className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition mb-5">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+          )}
           {children}
         </main>
       </div>

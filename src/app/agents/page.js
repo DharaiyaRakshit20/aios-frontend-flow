@@ -51,7 +51,11 @@ function AgentsList() {
         {agents.map((a) => (
           <div
             key={a.id}
+            role="button"
+            tabIndex={0}
+            aria-label={`Open chat with ${a.name}`}
             onClick={() => router.push(`/agents/${a.id}`)}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); router.push(`/agents/${a.id}`); } }}
             className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 cursor-pointer hover:border-indigo-500/30 transition"
           >
             <div className="flex justify-between items-start">
@@ -66,6 +70,7 @@ function AgentsList() {
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); setDeleteTarget(a); }}
+                aria-label={`Delete ${a.name}`}
                 className="text-slate-600 hover:text-red-400 text-sm"
               >
                 ✕

@@ -32,6 +32,7 @@ function ActionContent() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
+      {/* <button onClick={() => router.push(`/agents/${id}`)} className="text-sm text-slate-400 hover:text-white transition">← Back to agent</button> */}
       {/* success banner */}
       <div className="bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 rounded-2xl p-6 text-center">
         <div className="w-14 h-14 rounded-full bg-emerald-500/15 flex items-center justify-center mx-auto mb-3">
@@ -87,8 +88,6 @@ function ActionContent() {
           See embed code →
         </button>
       </div>
-
-      <button onClick={() => router.push(`/agents/${id}`)} className="text-sm text-slate-400 hover:text-white transition">← Back to agent</button>
     </div>
   );
 }

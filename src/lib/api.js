@@ -407,3 +407,5 @@ export async function toggleReportShare(reportId) {
 export async function getPublicReport(token) {
   return apiFetch(`/api/scanner/public/report/${token}`);
 }
+
+

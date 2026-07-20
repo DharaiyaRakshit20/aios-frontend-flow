@@ -42,7 +42,7 @@ export default function VerifyBanner() {
           {sending ? "Sending..." : "Resend email"}
         </button>
       )}
-      <button onClick={() => setShow(false)} className="text-slate-500 hover:text-white transition text-sm shrink-0 hidden sm:block">✕</button>
+      <button onClick={() => setShow(false)} className="text-slate-500 hover:text-white transition text-sm shrink-0">✕</button>
     </div>
   );
 }

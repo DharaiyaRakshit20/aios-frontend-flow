@@ -66,7 +66,7 @@ export default function BlueprintPage() {
     <AppShell>
       <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
         <div className="flex items-center justify-between">
-          <button onClick={() => router.push(`/report/${bp.report}`)} className="text-sm text-slate-400 hover:text-white transition">← Back to report</button>
+          {/* <button onClick={() => router.push(`/report/${bp.report}`)} className="text-sm text-slate-400 hover:text-white transition">← Back to report</button> */}
           {translating && (
             <span className="text-xs text-indigo-400 flex items-center gap-1.5">
               <span className="w-3 h-3 border-2 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin"></span>
