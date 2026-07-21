@@ -409,3 +409,17 @@ export async function getPublicReport(token) {
 }
 
 
+// --- support ---
+export async function submitSupport({ name = "", email = "", subject = "", message }) {
+  return apiFetch(`/api/support/`, {
+    method: "POST",
+    body: JSON.stringify({ name, email, subject, message }),
+  });
+}
+export async function getSupportMessages() {
+  return apiFetch(`/admin-panel/api/support/`);
+}
+export async function toggleSupport(id) {
+  return apiFetch(`/admin-panel/api/support/${id}/toggle/`, { method: "POST" });
+}
+

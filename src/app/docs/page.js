@@ -52,6 +52,25 @@ org = res.json()
       },
     },
     {
+      id: "list-orgs", label: "List Organizations",
+      method: "GET", path: "/api/organizations/",
+      desc: "Get all organizations (businesses) linked to your account — with their IDs, industry and creation date. Use an org's ID to run scans or create agents.",
+      snippets: {
+        curl: `curl ${apiUrl}/api/organizations/ \\
+  -H "Authorization: Api-Key qev_your_key"`,
+        javascript: `const res = await fetch("${apiUrl}/api/organizations/", {
+  headers: { "Authorization": "Api-Key qev_your_key" },
+});
+const orgs = await res.json();`,
+        python: `import requests
+res = requests.get(
+    "${apiUrl}/api/organizations/",
+    headers={"Authorization": "Api-Key qev_your_key"},
+)
+orgs = res.json()`,
+      },
+    },
+    {
       id: "scan", label: "Run a Scan",
       method: "POST", path: "/api/scanner/scan",
       desc: "Analyze a business and get an AI readiness report.",
