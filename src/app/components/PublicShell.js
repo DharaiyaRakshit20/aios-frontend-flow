@@ -33,6 +33,7 @@ export default function PublicShell({ children }) {
               <div className="space-y-2 text-sm text-slate-400">
                 <button onClick={() => router.push("/contact")} className="block hover:text-white transition">Contact</button>
                 <button onClick={() => router.push("/")} className="block hover:text-white transition">Home</button>
+                <button onClick={() => router.push("/support")} className="block hover:text-white transition">Support</button>
               </div>
             </div>
             <div>

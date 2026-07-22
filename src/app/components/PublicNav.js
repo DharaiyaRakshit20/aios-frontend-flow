@@ -27,6 +27,7 @@ export default function PublicNav() {
     { t: "AI Agent Builder", d: "Build & deploy chatbots", action: () => jump("features") },
     { t: "Embed & API", d: "Add AI to your website", action: () => jump("features") },
     { t: "ROI Simulator", d: "See what AI could save you", action: () => jump("roi") },
+    { t: "Business Knowledge", d: "Products, stock & policies", action: () => jump("features") },
   ];
   const solutionsMenu = [
     { t: "Retail & E-commerce", d: "Orders, replies, inventory", action: () => jump("use-cases") },

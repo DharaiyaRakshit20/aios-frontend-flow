@@ -42,16 +42,18 @@ export async function login(email, password) {
 }
 
 // --- generic authed request (har protected call isse jaayegi) ---
+// --- generic authed request (har protected call isse jaayegi) ---
 export async function apiFetch(path, options = {}) {
   const token = getToken();
+  const { timeout = 60000, ...rest } = options;   // per-call timeout
   const opts = {
-    ...options,
+    ...rest,
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
-    signal: AbortSignal.timeout(60000), // backend jagne ka time (Render cold start)
+    signal: AbortSignal.timeout(timeout),
   };
 
   let res;
@@ -60,13 +62,12 @@ export async function apiFetch(path, options = {}) {
   } catch {
     // pehli koshish fail (server so raha tha) -> ek retry
     await new Promise((r) => setTimeout(r, 2000));
-    res = await fetch(`${API_URL}${path}`, opts);
+    res = await fetch(`${API_URL}${path}`, { ...opts, signal: AbortSignal.timeout(timeout) });
   }
   const data = await res.json().catch(() => ({}));
 
-  // token expire / invalid -> logout aur login pe bhejo
   if (res.status === 401) {
-    if (typeof window !== "undefined" && token) {   // <- token tha, tabhi redirect
+    if (typeof window !== "undefined" && token) {
       logout();
       if (!window.location.pathname.startsWith("/login")) {
         window.location.href = "/login";
@@ -95,6 +96,7 @@ export async function runScan(organization, intake) {
   return apiFetch("/api/scanner/scan", {
     method: "POST",
     body: JSON.stringify({ organization, intake }),
+    timeout: 180000,   // 3 minutes — AI pipeline slow hai
   });
 }
 export async function getReports() {
@@ -423,3 +425,34 @@ export async function toggleSupport(id) {
   return apiFetch(`/admin-panel/api/support/${id}/toggle/`, { method: "POST" });
 }
 
+// --- knowledge (business profile + products) ---
+export async function getBusinessProfile(orgId) {
+  return apiFetch(`/api/organizations/${orgId}/business-profile/`);
+}
+export async function saveBusinessProfile(orgId, data) {
+  return apiFetch(`/api/organizations/${orgId}/business-profile/`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+export async function getProducts(orgId) {
+  return apiFetch(`/api/organizations/${orgId}/products/`);
+}
+export async function createProduct(orgId, data) {
+  return apiFetch(`/api/organizations/${orgId}/products/`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+export async function updateProduct(orgId, id, data) {
+  return apiFetch(`/api/organizations/${orgId}/products/${id}/`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+export async function deleteProduct(orgId, id) {
+  return apiFetch(`/api/organizations/${orgId}/products/${id}/`, { method: "DELETE" });
+}
+export async function getBusinessContextPreview(orgId) {
+  return apiFetch(`/api/organizations/${orgId}/business-context/`);
+}
